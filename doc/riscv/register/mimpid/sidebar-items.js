@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["read","Reads the CSR"]],"struct":[["Mimpid","mimpid register"]]};

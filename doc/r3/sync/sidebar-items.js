@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["mutex",""],["recursive_mutex",""],["source","Abstracts the various ways to provide an initial value to static cell types (e.g., `Mutex`). It’s mostly used through their definer types."]]};

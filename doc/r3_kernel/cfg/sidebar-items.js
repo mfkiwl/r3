@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["CfgBuilder","A kernel configuration being constructed."],["InterruptHandlerTable","A table of combined second-level interrupt handlers."]]};

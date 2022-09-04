@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["EMPTY","The empty [`Bag`]."]],"trait":[["Bag","A heterogeneous collection to store property values."]],"type":[["Empty","The type of the empty [`Bag`]."],["List","A [`Bag`] containing `Head` and the elements from `Tail: Bag`."]]};

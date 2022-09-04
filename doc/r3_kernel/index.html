@@ -1,0 +1,546 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The original kernel of R3-OS."><meta name="keywords" content="rust, rustlang, rust-lang, r3_kernel"><title>r3_kernel - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../dark.css" disabled><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../storage.js"></script><script defer src="../crates.js"></script><script defer src="../main.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"><style type="text/css">
+/* Cover image, something that is definitely relevant to the subject */
+.distractor {
+    margin: 0 auto;
+    max-width: 600px;
+}
+.distractor > a {
+    display: block;
+    background-size: cover;
+    /* background: ...; — specified by inline style */
+    /* padding-bottom: ...; — specified by inline style */
+}
+
+/* #![doc(html_logo_url = ...)] */
+body.theme-dark .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.9);
+}
+body.theme-ayu .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.85);
+}
+
+/* Table of contents */
+.toc-header + ul {
+    background: rgba(128, 128, 128, 0.1);
+    margin: 1em 0; padding: 1em;
+    width: 40%;
+    min-width: 280px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    font-family: 'Fira Sans'; /* The UI/heading font of rustdoc */
+    font-size: 95%;
+}
+.toc-header + ul::before {
+    content: "Contents";
+    font-weight: bold;
+}
+.toc-header + ul ul { margin-bottom: 0; }
+.toc-header + ul li { list-style: none; }
+
+/* Poor man's admonition
+ *
+ * # Usage
+ *
+ * ## Normal
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > **Title:** lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     > lorem ipsum
+ *
+ * ## Collapsible
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > <details>
+ *     > <summary>Title</summary>
+ *     >
+ *     > lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     >
+ *     > </details>
+ */
+.admonition-follows + blockquote {
+    background: rgba(128, 128, 128, 0.1) !important;
+    margin: 1em !important; padding: 1em 1em 0 !important;
+    color: inherit !important; overflow: hidden;
+}
+.admonition-follows + blockquote::after { /* collapsible padding */
+    content: ""; display: block; margin-top: 1em;
+}
+
+.admonition-follows + blockquote summary {
+    cursor: pointer;
+    will-change: opacity;
+    user-select: none;
+    -webkit-user-select: none;
+    font-weight: bold;
+}
+.admonition-follows + blockquote summary:not([open]):not(:hover) {
+    opacity: 0.5;
+}
+.admonition-follows + blockquote summary + * {
+    margin-top: 1em;
+}
+
+/* Display a warning if some Cargo features are disabled. */
+.disabled-feature-warning > p > span:before { content: "Warning:"; font-weight: bold; }
+.disabled-feature-warning > p > span:after { content: " This documentation was built without a "; }
+.disabled-feature-warning > p > code:before { content: "--all-features"; }
+.disabled-feature-warning > p:after { content: " build option. Some items might be missing."; }
+
+/* Center an inline image
+ *
+ * # Usage
+ *
+ *    <span class="center">![kernel-traits]</span>
+ *
+ *    [kernel-traits]: data:image/svg+xml;base64,< super long base64 data >
+ *
+ * The image wouldn't render if `![kernel-traits]` were wrapped with `<center>`
+ * because the Markdown processor doesn't do Markdown processing inside a block
+ * element. On the other hand, it thinks `<span>` is an inline element (by
+ * default), so markups inside `<span>` are processed.
+ *
+ * For diagrams processed by `::svgbobdoc`, just use `<center>`.
+ */
+span.center {
+    display: block;
+    text-align: center;
+}
+
+/* Add margins to SvgBob images */
+span.center img, center img {
+    border: 10px solid white;
+    background: white;
+}
+
+/* Auto-invert SvgBob images in a dark theme */
+body.theme-dark span.center img, body.theme-dark center img {
+    filter: invert(88%);
+}
+
+body.theme-ayu span.center img, body.theme-ayu center img {
+    filter: invert(89%) sepia(90%) hue-rotate(180deg);
+}
+
+/* FIXME: rustdoc's intra-doc processor generates a warning when it encounters a
+   bracketed text with an unknown link target. This misfires for CSS attribute
+   selectors. Make rustdoc happy by defining a fake link target. I'm not sure if
+   it's worth reporting.
+
+[open]: #dummy
+
+*/
+</style>
+<script type="application/javascript">
+<!--
+// Monitors the current rustdoc theme and adds `.theme-NAME` to `<body>`
+function initThemeMonitor() {
+    if (typeof switchTheme !== 'function' ||
+        typeof themeStyle !== 'object' ||
+        typeof document.body.classList === 'undefined')
+    {
+        // Something is wrong, don't do anything
+        return;
+    }
+
+    var currentClassName = null;
+    function onApplyTheme(name) {
+        if (currentClassName != null) {
+            document.body.classList.remove(currentClassName);
+        }
+        currentClassName = "theme-" + name;
+        document.body.classList.add(currentClassName);
+    }
+
+    var match = themeStyle.href.match(/\/([a-z]+)(-[-a-zA-Z0-9.]*)?\.css$/);
+    var currentStyle = (match && match[1]) || "light";
+    onApplyTheme(currentStyle);
+
+    // Intercept calls to `switchTheme`
+    var originalSwitchTheme = switchTheme;
+    switchTheme = function (_0, _1, newTheme) {
+        onApplyTheme(newTheme);
+        originalSwitchTheme.apply(this, arguments);
+    };
+}
+
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initThemeMonitor();
+} else {
+    document.addEventListener('DOMContentLoaded', initThemeMonitor);
+}
+-->
+</script>
+</head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../r3_kernel/index.html"><div class="logo-container"><img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../r3_kernel/index.html"><div class="logo-container">
+                    <img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></div></a><h2 class="location"><a href="#">Crate r3_kernel</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.3</li><li><a id="all-types" href="all.html">All Items</a></li></ul></div><section><div class="block"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#constants">Constants</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div></section></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../r3_kernel/index.html">
+                        <img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">r3_kernel</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/r3_kernel/lib.rs.html#1-982">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The original kernel of <a href="https://crates.io/crates/r3">R3-OS</a>.</p>
+<ul>
+<li>
+<p>Traditional uniprocessor tickless real-time kernel with preemptive scheduling</p>
+</li>
+<li>
+<p>Implements a software-based scheduler supporting a customizable number of task priorities (up to 2¹⁵ levels on a 32-bit target, though the implementation is heavily optimized for a smaller number of priorities) and an unlimited number of tasks.</p>
+</li>
+<li>
+<p>Provides a scalable kernel timing mechanism with a logarithmic time complexity. This implementation is robust against a large interrupt processing delay.</p>
+</li>
+<li>
+<p>The kernel is split into a target-independent portion and a target-specific portion. The target-specific portion (called <em>a port</em>) is provided as a separate crate. An application <strong>combines them using the trait system</strong>.</p>
+</li>
+</ul>
+<!-- Display a "some Cargo features are disabled" warning in the documentation so that the user can know some items are missing for that reason. But we don't want this message to be displayed when someone is viewing `lib.md` directly, so the actual message is rendered by CSS. -->
+<div class="admonition-follows"></div>
+<blockquote class="disabled-feature-warning"><p><span></span><code></code></p></blockquote>
+<div class="toc-header"></div>
+<ul>
+<li><a href="#configuring-the-kernel">Configuring the Kernel</a>
+<ul>
+<li><a href="#kernel-trait-type">Kernel Trait Type</a></li>
+<li><a href="#trait-mechanics">Trait Mechanics</a></li>
+</ul>
+</li>
+<li><a href="#implementation-defined-behaviors">Implementation-Defined Behaviors</a></li>
+<li><a href="#cargo-features">Cargo Features</a></li>
+<li><a href="#modules">Modules</a>  <!-- this section is generated by rustdoc --></li>
+<li><a href="#macros">Macros</a>  <!-- this section is generated by rustdoc --></li>
+<li><a href="#structs">Structs</a>  <!-- this section is generated by rustdoc --></li>
+<li><a href="#constants">Constants</a>  <!-- this section is generated by rustdoc --></li>
+<li><a href="#traits">Traits</a>  <!-- this section is generated by rustdoc --></li>
+<li><a href="#types">Type Definitions</a>  <!-- this section is generated by rustdoc --></li>
+</ul>
+<h2 id="configuring-the-kernel"><a href="#configuring-the-kernel">Configuring the Kernel</a></h2><h3 id="kernel-trait-type"><a href="#kernel-trait-type">Kernel Trait Type</a></h3>
+<p>The R3 original kernel utilizes Rust’s trait system to allow system designers to combine necessary components of the kernel. Components are represented by traits implemented on an application-specific <strong>kernel trait type</strong>, often named <code>SystemTraits</code> by convention. The kernel trait type is then used as a parameter of <a href="struct.System.html"><code>r3_kernel::System</code></a><code>&lt;Traits&gt;</code> to form a concrete <a href="../r3_core/index.html#system-type">system type</a>.</p>
+<div class="admonition-follows"></div>
+<blockquote>
+<p><strong>Rationale:</strong> “Trait” is an allusion to the type trait classes such as <code>std::iterator_traits</code> from the C++ standard library. You could also say that it’s named so because you implement various traits on it to configure the kernel, though.</p>
+</blockquote>
+<p>Application code uses the following macros to build a kernel trait type in a modular way:</p>
+<ul>
+<li>A port-provided macro like <strong><code>r3_xxx_port::use_port!</code></strong> (named in this way by convention) instantiates port-specfific items.</li>
+<li><strong><a href="macro.build.html"><code>r3_kernel::build!</code></a></strong> instantiates the kernel and kernel-private static data based on the kernel configuration supplied in the form of a <strong><a href="../r3_core/index.html#static-configuration">configuration function</a></strong>.</li>
+</ul>
+<!-- FIXME: To work around <https://github.com/rust-lang/cargo/issues/4242>, implement <https://github.com/rust-lang/futures-rs/pull/2305> and make the following code block doc-testable  -->
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="kw">type</span> <span class="ident">System</span> <span class="op">=</span> <span class="ident">r3_kernel::System</span><span class="op">&lt;</span><span class="ident">SystemTraits</span><span class="op">&gt;</span>;
+<span class="macro">r3_port_std::use_port!</span>(<span class="kw">unsafe</span> <span class="kw">struct</span> <span class="ident">SystemTraits</span>);
+
+<span class="kw">struct</span> <span class="ident">Objects</span> { <span class="comment">/* ... */</span> }
+<span class="kw">const</span> <span class="kw">fn</span> <span class="ident">configure_app</span>(<span class="kw">_</span>: <span class="kw-2">&amp;mut</span> <span class="ident">r3_kernel::Cfg</span><span class="op">&lt;</span><span class="ident">SystemTraits</span><span class="op">&gt;</span>) -&gt; <span class="ident">Objects</span>
+{ <span class="comment">/* ... */</span> }
+
+<span class="kw">const</span> <span class="ident">COTTAGE</span>: <span class="ident">Objects</span> <span class="op">=</span> <span class="macro">r3_kernel::build!</span>(<span class="ident">System</span>, <span class="ident">configure_app</span> =&gt; <span class="ident">Objects</span>);</code></pre></div>
+<h3 id="trait-mechanics"><a href="#trait-mechanics">Trait Mechanics</a></h3>
+<p>The macros presented in the previous section generate many trait implementations interconnected under a complex relationship to the end of providing all necessary components. This section provides a detailed account of how this is implemented. <strong>An application developer is usually not required to understand this.</strong></p>
+<p>The following diagram outlines the trait relationship around a kernel trait type.</p>
+<ul>
+<li>The arrows between traits represent a super-sub relationship. It’s not possible to create a circular dependency among them. Associated types can only be referenced in one direction.</li>
+<li>The <code>impl</code>s in the same crate as the implemented traits are blanket <code>impl</code>s.</li>
+<li>The arrows between <code>impl</code>s represent trait bounds on <code>Self</code> (for blanket <code>impl</code>s) or assumed <code>impl</code>s (for the other <code>impl</code>s). It’s not possible to create a circular dependency fully comprised of blanket <code>impl</code>s, but otherwise it’s possible to create one.</li>
+</ul>
+<p><span class="center"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1ODQiIGhlaWdodD0iNTc2IiBzdHlsZT0idHJhbnNmb3JtOnRyYW5zbGF0ZSgwLjVweCwwLjVweCkiPgogICAgPHN0eWxlPgogICAgICAgIGxpbmUsIHBhdGgsIGNpcmNsZSwgcmVjdCwgcG9seWdvbntzdHJva2U6YmxhY2s7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLW9wYWNpdHk6MTtmaWxsLW9wYWNpdHk6MTtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46bWl0ZXI7fXRleHR7Zm9udC1mYW1pbHk6J1NvdXJjZSBDb2RlIFBybycsJ0FuZGFsZSBNb25vJywnU2Vnb2UgVUkgTW9ubycsJ0RlamF2dSBTYW5zIE1vbm8nLCdDb25zb2xhcycsbW9ub3NwYWNlO2ZvbnQtc2l6ZToxM3B4O31yZWN0LmJhY2tkcm9we3N0cm9rZTpub25lO2ZpbGw6d2hpdGU7fS5icm9rZW57c3Ryb2tlLWRhc2hhcnJheTo4O30uZmlsbGVke2ZpbGw6YmxhY2s7fS5iZ19maWxsZWR7ZmlsbDp3aGl0ZTt9Lm5vZmlsbHtmaWxsOndoaXRlO30uZW5kX21hcmtlZF9hcnJvd3ttYXJrZXItZW5kOnVybCgjYXJyb3cpO30uc3RhcnRfbWFya2VkX2Fycm93e21hcmtlci1zdGFydDp1cmwoI2Fycm93KTt9LmVuZF9tYXJrZWRfZGlhbW9uZHttYXJrZXItZW5kOnVybCgjZGlhbW9uZCk7fS5zdGFydF9tYXJrZWRfZGlhbW9uZHttYXJrZXItc3RhcnQ6dXJsKCNkaWFtb25kKTt9LmVuZF9tYXJrZWRfY2lyY2xle21hcmtlci1lbmQ6dXJsKCNjaXJjbGUpO30uc3RhcnRfbWFya2VkX2NpcmNsZXttYXJrZXItc3RhcnQ6dXJsKCNjaXJjbGUpO30uZW5kX21hcmtlZF9vcGVuX2NpcmNsZXttYXJrZXItZW5kOnVybCgjb3Blbl9jaXJjbGUpO30uc3RhcnRfbWFya2VkX29wZW5fY2lyY2xle21hcmtlci1zdGFydDp1cmwoI29wZW5fY2lyY2xlKTt9LmVuZF9tYXJrZWRfYmlnX29wZW5fY2lyY2xle21hcmtlci1lbmQ6dXJsKCNiaWdfb3Blbl9jaXJjbGUpO30uc3RhcnRfbWFya2VkX2JpZ19vcGVuX2NpcmNsZXttYXJrZXItc3RhcnQ6dXJsKCNiaWdfb3Blbl9jaXJjbGUpO30KICAgICAgICA8IS0tc2VwYXJhdG9yLS0+CiAgICAgICAgCiAgICA8L3N0eWxlPgogICAgPGRlZnM+CiAgICAgICAgPG1hcmtlciBpZD0iYXJyb3ciIHZpZXdCb3g9Ii0yIC0yIDggOCIgcmVmWD0iNCIgcmVmWT0iMiIgbWFya2VyV2lkdGg9IjciIG1hcmtlckhlaWdodD0iNyIgb3JpZW50PSJhdXRvLXN0YXJ0LXJldmVyc2UiPgogICAgICAgICAgICA8cG9seWdvbiBwb2ludHM9IjAsMCAwLDQgNCwyIDAsMCI+PC9wb2x5Z29uPgogICAgICAgIDwvbWFya2VyPgogICAgICAgIDxtYXJrZXIgaWQ9ImRpYW1vbmQiIHZpZXdCb3g9Ii0yIC0yIDggOCIgcmVmWD0iNCIgcmVmWT0iMiIgbWFya2VyV2lkdGg9IjciIG1hcmtlckhlaWdodD0iNyIgb3JpZW50PSJhdXRvLXN0YXJ0LXJldmVyc2UiPgogICAgICAgICAgICA8cG9seWdvbiBwb2ludHM9IjAsMiAyLDAgNCwyIDIsNCAwLDIiPjwvcG9seWdvbj4KICAgICAgICA8L21hcmtlcj4KICAgICAgICA8bWFya2VyIGlkPSJjaXJjbGUiIHZpZXdCb3g9IjAgMCA4IDgiIHJlZlg9IjQiIHJlZlk9IjQiIG1hcmtlcldpZHRoPSI3IiBtYXJrZXJIZWlnaHQ9IjciIG9yaWVudD0iYXV0by1zdGFydC1yZXZlcnNlIj4KICAgICAgICAgICAgPGNpcmNsZSBjeD0iNCIgY3k9IjQiIHI9IjIiIGNsYXNzPSJmaWxsZWQiPjwvY2lyY2xlPgogICAgICAgIDwvbWFya2VyPgogICAgICAgIDxtYXJrZXIgaWQ9Im9wZW5fY2lyY2xlIiB2aWV3Qm94PSIwIDAgOCA4IiByZWZYPSI0IiByZWZZPSI0IiBtYXJrZXJXaWR0aD0iNyIgbWFya2VySGVpZ2h0PSI3IiBvcmllbnQ9ImF1dG8tc3RhcnQtcmV2ZXJzZSI+CiAgICAgICAgICAgIDxjaXJjbGUgY3g9IjQiIGN5PSI0IiByPSIyIiBjbGFzcz0iYmdfZmlsbGVkIj48L2NpcmNsZT4KICAgICAgICA8L21hcmtlcj4KICAgICAgICA8bWFya2VyIGlkPSJiaWdfb3Blbl9jaXJjbGUiIHZpZXdCb3g9IjAgMCA4IDgiIHJlZlg9IjQiIHJlZlk9IjQiIG1hcmtlcldpZHRoPSI3IiBtYXJrZXJIZWlnaHQ9IjciIG9yaWVudD0iYXV0by1zdGFydC1yZXZlcnNlIj4KICAgICAgICAgICAgPGNpcmNsZSBjeD0iNCIgY3k9IjQiIHI9IjMiIGNsYXNzPSJiZ19maWxsZWQiPjwvY2lyY2xlPgogICAgICAgIDwvbWFya2VyPgogICAgPC9kZWZzPgogICAgPHJlY3QgY2xhc3M9ImJhY2tkcm9wIiB4PSIwIiB5PSIwIiB3aWR0aD0iNTg0IiBoZWlnaHQ9IjU5MiI+PC9yZWN0PgogICAgPHJlY3QgeD0iMjkyIiB5PSI3MiIgd2lkdGg9IjE0NCIgaGVpZ2h0PSIzMiIgY2xhc3M9InNvbGlkIG5vZmlsbCIgcng9IjQiPjwvcmVjdD4KICAgIDx0ZXh0IHg9IjMwNiIgeT0iOTIiICB0ZXh0TGVuZ3RoPSIzMiI+aW1wbDwvdGV4dD4KICAgIDx0ZXh0IHg9IjM0NiIgeT0iOTIiICB0ZXh0TGVuZ3RoPSI4MCI+S2VybmVsQ2ZnMTwvdGV4dD4KICAgIDxyZWN0IHg9IjQ3NiIgeT0iMjAwIiB3aWR0aD0iOTYiIGhlaWdodD0iMzIiIGNsYXNzPSJzb2xpZCBub2ZpbGwiIHJ4PSI0Ij48L3JlY3Q+CiAgICA8dGV4dCB4PSI0OTAiIHk9IjIyMCIgIHRleHRMZW5ndGg9IjMyIj5pbXBsPC90ZXh0PgogICAgPHRleHQgeD0iNTMwIiB5PSIyMjAiICB0ZXh0TGVuZ3RoPSIzMiI+UG9ydDwvdGV4dD4KICAgIDxyZWN0IHg9IjI5MiIgeT0iMzEyIiB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjMyIiBjbGFzcz0ic29saWQgbm9maWxsIiByeD0iNCI+PC9yZWN0PgogICAgPHRleHQgeD0iMzA2IiB5PSIzMzIiICB0ZXh0TGVuZ3RoPSIzMiI+aW1wbDwvdGV4dD4KICAgIDx0ZXh0IHg9IjM0NiIgeT0iMzMyIiAgdGV4dExlbmd0aD0iODAiPktlcm5lbENmZzI8L3RleHQ+CiAgICA8cmVjdCB4PSIxOTYiIHk9IjQyNCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIzMiIgY2xhc3M9InNvbGlkIG5vZmlsbCIgcng9IjQiPjwvcmVjdD4KICAgIDx0ZXh0IHg9IjIxMCIgeT0iNDQ0IiAgdGV4dExlbmd0aD0iMzIiPmltcGw8L3RleHQ+CiAgICA8dGV4dCB4PSIyNTAiIHk9IjQ0NCIgIHRleHRMZW5ndGg9Ijk2Ij5LZXJuZWxUcmFpdHM8L3RleHQ+CiAgICA8cmVjdCB4PSIyMDQiIHk9IjUzNiIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIzMiIgY2xhc3M9InNvbGlkIG5vZmlsbCIgcng9IjQiPjwvcmVjdD4KICAgIDx0ZXh0IHg9IjIxOCIgeT0iNTU2IiAgdGV4dExlbmd0aD0iMzIiPmltcGw8L3RleHQ+CiAgICA8dGV4dCB4PSIyNTgiIHk9IjU1NiIgIHRleHRMZW5ndGg9Ijk2Ij5Qb3J0VG9LZXJuZWw8L3RleHQ+CiAgICA8cmVjdCB4PSIyMCIgeT0iNzIiIHdpZHRoPSIxNTIiIGhlaWdodD0iMzIiIGNsYXNzPSJzb2xpZCBub2ZpbGwiIHJ4PSI0Ij48L3JlY3Q+CiAgICA8dGV4dCB4PSIzNCIgeT0iOTIiICB0ZXh0TGVuZ3RoPSI0MCI+dHJhaXQ8L3RleHQ+CiAgICA8dGV4dCB4PSI4MiIgeT0iOTIiICB0ZXh0TGVuZ3RoPSI4MCI+S2VybmVsQ2ZnMTwvdGV4dD4KICAgIDxyZWN0IHg9IjQ0IiB5PSIyMDAiIHdpZHRoPSIxMDQiIGhlaWdodD0iMzIiIGNsYXNzPSJzb2xpZCBub2ZpbGwiIHJ4PSI0Ij48L3JlY3Q+CiAgICA8dGV4dCB4PSI1OCIgeT0iMjIwIiAgdGV4dExlbmd0aD0iNDAiPnRyYWl0PC90ZXh0PgogICAgPHRleHQgeD0iMTA2IiB5PSIyMjAiICB0ZXh0TGVuZ3RoPSIzMiI+UG9ydDwvdGV4dD4KICAgIDxyZWN0IHg9IjIwIiB5PSIzMTIiIHdpZHRoPSIxNTIiIGhlaWdodD0iMzIiIGNsYXNzPSJzb2xpZCBub2ZpbGwiIHJ4PSI0Ij48L3JlY3Q+CiAgICA8dGV4dCB4PSIzNCIgeT0iMzMyIiAgdGV4dExlbmd0aD0iNDAiPnRyYWl0PC90ZXh0PgogICAgPHRleHQgeD0iODIiIHk9IjMzMiIgIHRleHRMZW5ndGg9IjgwIj5LZXJuZWxDZmcyPC90ZXh0PgogICAgPHJlY3QgeD0iMTIiIHk9IjQyNCIgd2lkdGg9IjE2OCIgaGVpZ2h0PSIzMiIgY2xhc3M9InNvbGlkIG5vZmlsbCIgcng9IjQiPjwvcmVjdD4KICAgIDx0ZXh0IHg9IjI2IiB5PSI0NDQiICB0ZXh0TGVuZ3RoPSI0MCI+dHJhaXQ8L3RleHQ+CiAgICA8dGV4dCB4PSI3NCIgeT0iNDQ0IiAgdGV4dExlbmd0aD0iOTYiPktlcm5lbFRyYWl0czwvdGV4dD4KICAgIDxyZWN0IHg9IjIwIiB5PSI1MzYiIHdpZHRoPSIxNjgiIGhlaWdodD0iMzIiIGNsYXNzPSJzb2xpZCBub2ZpbGwiIHJ4PSI0Ij48L3JlY3Q+CiAgICA8dGV4dCB4PSIzNCIgeT0iNTU2IiAgdGV4dExlbmd0aD0iNDAiPnRyYWl0PC90ZXh0PgogICAgPHRleHQgeD0iODIiIHk9IjU1NiIgIHRleHRMZW5ndGg9Ijk2Ij5Qb3J0VG9LZXJuZWw8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjEyIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIyOCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iNDQiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjYwIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSI3NiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iOTIiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjEwOCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iMTI0IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIxNDAiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjE1NiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iMTcyIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIxODgiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjIwNCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iMjIwIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIyMzYiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjI1MiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iMjY4IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIyODQiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjMwMCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iMzE2IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIzMzIiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSIyMjYiIHk9IjM0OCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjIyNiIgeT0iMzY0IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iMjI2IiB5PSIzODAiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8bGluZSB4MT0iMjMyIiB5MT0iMzc2IiB4Mj0iMjQwIiB5Mj0iMzc2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDx0ZXh0IHg9IjI0MiIgeT0iNDQiICB0ZXh0TGVuZ3RoPSI0OCI+YnVpbGQhPC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSI0NCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iNjAiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9Ijc2IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSI5MiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMTA4IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSIxMjQiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9IjE0MCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjMzMCIgeT0iMTU2IiAgdGV4dExlbmd0aD0iNDgiPkNvbmZpZzwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMTcyIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSIxODgiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9IjIwNCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMjM2IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSIyNTIiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9IjI2OCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMjg0IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSIzMDAiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9IjMxNiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMzMyIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSIzNDgiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9IjM2NCIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDxsaW5lIHgxPSIyNDgiIHkxPSIzNzYiIHgyPSIyNTYiIHkyPSIzNzYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPGxpbmUgeDE9IjI2NCIgeTE9IjM3NiIgeDI9IjI3MiIgeTI9IjM3NiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8bGluZSB4MT0iMjgwIiB5MT0iMzc2IiB4Mj0iMjg4IiB5Mj0iMzc2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDxsaW5lIHgxPSIyOTYiIHkxPSIzNzYiIHgyPSIzMDQiIHkyPSIzNzYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPGxpbmUgeDE9IjMxMiIgeTE9IjM3NiIgeDI9IjMyMCIgeTI9IjM3NiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8bGluZSB4MT0iMzI4IiB5MT0iMzc2IiB4Mj0iMzM2IiB5Mj0iMzc2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDxsaW5lIHgxPSI0MDgiIHkxPSIzNzYiIHgyPSI0MTYiIHkyPSIzNzYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPGxpbmUgeDE9IjQyNCIgeTE9IjM3NiIgeDI9IjQzMiIgeTI9IjM3NiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8bGluZSB4MT0iNDQwIiB5MT0iMzc2IiB4Mj0iNDQ4IiB5Mj0iMzc2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMzgwIiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDI2IiB5PSIzOTYiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0MjYiIHk9IjQxMiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQyNiIgeT0iNDI4IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDI2IiB5PSI0NjAiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0MjYiIHk9IjQ5MiIgIHRleHRMZW5ndGg9IjgiPuKVtTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQyNiIgeT0iNTA4IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDI2IiB5PSI1MjQiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NTAiIHk9IjU0MCIgIHRleHRMZW5ndGg9IjQwIj5FbnRyeTwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ5OCIgeT0iNTQwIiAgdGV4dExlbmd0aD0iNDgiPnBvaW50czwvdGV4dD4KICAgIDx0ZXh0IHg9IjQyNiIgeT0iNTU2IiAgdGV4dExlbmd0aD0iOCI+4pW1PC90ZXh0PgogICAgPHRleHQgeD0iNDI2IiB5PSI1NzIiICB0ZXh0TGVuZ3RoPSI4Ij7ilbU8L3RleHQ+CiAgICA8dGV4dCB4PSI0NjYiIHk9IjQ0IiAgdGV4dExlbmd0aD0iMjQiPnVzZTwvdGV4dD4KICAgIDxsaW5lIHgxPSI0ODgiIHkxPSI0OCIgeDI9IjQ5NiIgeTI9IjQ4IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDx0ZXh0IHg9IjQ5OCIgeT0iNDQiICB0ZXh0TGVuZ3RoPSI0MCI+cG9ydCE8L3RleHQ+CiAgICA8dGV4dCB4PSIzODYiIHk9IjE1NiIgIHRleHRMZW5ndGg9IjMyIj5kYXRhPC90ZXh0PgogICAgPGxpbmUgeDE9IjM0NCIgeTE9IjM3NiIgeDI9IjM1MiIgeTI9IjM3NiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8bGluZSB4MT0iMzYwIiB5MT0iMzc2IiB4Mj0iMzY4IiB5Mj0iMzc2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDxsaW5lIHgxPSIzNzYiIHkxPSIzNzYiIHgyPSIzODQiIHkyPSIzNzYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPGxpbmUgeDE9IjM5MiIgeTE9IjM3NiIgeDI9IjQwMCIgeTI9IjM3NiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8dGV4dCB4PSIyIiB5PSIxMiIgIHRleHRMZW5ndGg9IjcyIj5yM19rZXJuZWw8L3RleHQ+CiAgICA8dGV4dCB4PSIyNDIiIHk9IjEyIiAgdGV4dExlbmd0aD0iNjQiPnlvdXJfYXBwPC90ZXh0PgogICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIzMDQsMTI0IDMwOCwxMTIgMzEyLDEyNCIgY2xhc3M9ImZpbGxlZCI+PC9wb2x5Z29uPgogICAgICAgIDxsaW5lIHgxPSIzMDgiIHkxPSIxMjQiIHgyPSIzMDgiIHkyPSIxNDgiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxwYXRoIGQ9Ik0gMjU2LDE1MiBBIDQsNCAwLDAsMCAyNTIsMTU2IiBjbGFzcz0ibm9maWxsIj48L3BhdGg+CiAgICAgICAgPGxpbmUgeDE9IjI1MiIgeTE9IjE1NiIgeDI9IjI1MiIgeTI9IjQxNiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPGxpbmUgeDE9IjI1NiIgeTE9IjE1MiIgeDI9IjMwNCIgeTI9IjE1MiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPHBhdGggZD0iTSAzMDgsMTQ4IEEgNCw0IDAsMCwxIDMwNCwxNTIiIGNsYXNzPSJub2ZpbGwiPjwvcGF0aD4KICAgICAgICA8bGluZSB4MT0iMjUyIiB5MT0iMjE2IiB4Mj0iNDU2IiB5Mj0iMjE2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cG9seWdvbiBwb2ludHM9IjQ1NiwyMTIgNDY0LDIxNiA0NTYsMjIwIiBjbGFzcz0iZmlsbGVkIj48L3BvbHlnb24+CiAgICA8L2c+CiAgICA8Zz4KICAgICAgICA8bGluZSB4MT0iMzcyIiB5MT0iMTEyIiB4Mj0iMzcyIiB5Mj0iMTMyIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cG9seWdvbiBwb2ludHM9IjM2OCwxMzIgMzc2LDEzMiAzNzIsMTQ0IiBjbGFzcz0iZmlsbGVkIj48L3BvbHlnb24+CiAgICA8L2c+CiAgICA8Zz4KICAgICAgICA8bGluZSB4MT0iNDI0IiB5MT0iMTUyIiB4Mj0iNTIwIiB5Mj0iMTUyIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cGF0aCBkPSJNIDUyMCwxNTIgQSA0LDQgMCwwLDEgNTI0LDE1NiIgY2xhc3M9Im5vZmlsbCI+PC9wYXRoPgogICAgICAgIDxsaW5lIHgxPSI1MjQiIHkxPSIxNTYiIHgyPSI1MjQiIHkyPSIxODAiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iNTIwLDE4MCA1MjgsMTgwIDUyNCwxOTIiIGNsYXNzPSJmaWxsZWQiPjwvcG9seWdvbj4KICAgIDwvZz4KICAgIDxnPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iMzY4LDE3MiAzNzIsMTYwIDM3NiwxNzIiIGNsYXNzPSJmaWxsZWQiPjwvcG9seWdvbj4KICAgICAgICA8bGluZSB4MT0iMzcyIiB5MT0iMTcyIiB4Mj0iMzcyIiB5Mj0iMjA4IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cGF0aCBkPSJNIDM3MiwyMDggQSAxMiwxMiAwLDAsMSAzNzIsMjI0IiBjbGFzcz0ibm9maWxsIj48L3BhdGg+CiAgICAgICAgPGxpbmUgeDE9IjM3MiIgeTE9IjIyNCIgeDI9IjM3MiIgeTI9IjMwNCIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8L2c+CiAgICA8Zz4KICAgICAgICA8bGluZSB4MT0iNTI0IiB5MT0iMjQwIiB4Mj0iNTI0IiB5Mj0iNDM2IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cG9seWdvbiBwb2ludHM9IjM2OCw0MzYgMzYwLDQ0MCAzNjgsNDQ0IiBjbGFzcz0iZmlsbGVkIj48L3BvbHlnb24+CiAgICAgICAgPGxpbmUgeDE9IjM2OCIgeTE9IjQ0MCIgeDI9IjUyMCIgeTI9IjQ0MCIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPGxpbmUgeDE9IjM4OCIgeTE9IjQ0MCIgeDI9IjM4OCIgeTI9IjQ4NCIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPHBhdGggZD0iTSA1MjQsNDM2IEEgNCw0IDAsMCwxIDUyMCw0NDAiIGNsYXNzPSJub2ZpbGwiPjwvcGF0aD4KICAgICAgICA8cGF0aCBkPSJNIDM0NCw0ODggQSA0LDQgMCwwLDAgMzQwLDQ5MiIgY2xhc3M9Im5vZmlsbCI+PC9wYXRoPgogICAgICAgIDxsaW5lIHgxPSIzNDAiIHkxPSI0OTIiIHgyPSIzNDAiIHkyPSI1MTYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxsaW5lIHgxPSIzNDQiIHkxPSI0ODgiIHgyPSIzODQiIHkyPSI0ODgiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxwYXRoIGQ9Ik0gMzg4LDQ4NCBBIDQsNCAwLDAsMSAzODQsNDg4IiBjbGFzcz0ibm9maWxsIj48L3BhdGg+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIzMzYsNTE2IDM0NCw1MTYgMzQwLDUyOCIgY2xhc3M9ImZpbGxlZCI+PC9wb2x5Z29uPgogICAgPC9nPgogICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIzMjgsMzY0IDMzMiwzNTIgMzM2LDM2NCIgY2xhc3M9ImZpbGxlZCI+PC9wb2x5Z29uPgogICAgICAgIDxsaW5lIHgxPSIzMzIiIHkxPSIzNjQiIHgyPSIzMzIiIHkyPSIzODgiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxwYXRoIGQ9Ik0gMjgwLDM5MiBBIDQsNCAwLDAsMCAyNzYsMzk2IiBjbGFzcz0ibm9maWxsIj48L3BhdGg+CiAgICAgICAgPGxpbmUgeDE9IjI3NiIgeTE9IjM5NiIgeDI9IjI3NiIgeTI9IjQxNiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPGxpbmUgeDE9IjI4MCIgeTE9IjM5MiIgeDI9IjMyOCIgeTI9IjM5MiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPHBhdGggZD0iTSAzMzIsMzg4IEEgNCw0IDAsMCwxIDMyOCwzOTIiIGNsYXNzPSJub2ZpbGwiPjwvcGF0aD4KICAgIDwvZz4KICAgIDxnPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iNDA4LDM2NCA0MTIsMzUyIDQxNiwzNjQiIGNsYXNzPSJmaWxsZWQiPjwvcG9seWdvbj4KICAgICAgICA8bGluZSB4MT0iNDEyIiB5MT0iMzY0IiB4Mj0iNDEyIiB5Mj0iNDMyIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cGF0aCBkPSJNIDQxMiw0MzIgQSAxMiwxMiAwLDAsMSA0MTIsNDQ4IiBjbGFzcz0ibm9maWxsIj48L3BhdGg+CiAgICAgICAgPGxpbmUgeDE9IjQxMiIgeTE9IjQ0OCIgeDI9IjQxMiIgeTI9IjQ2OCIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPHBhdGggZD0iTSA0MTIsNDY4IEEgNCw0IDAsMCwwIDQxNiw0NzIiIGNsYXNzPSJub2ZpbGwiPjwvcGF0aD4KICAgICAgICA8bGluZSB4MT0iNDE2IiB5MT0iNDcyIiB4Mj0iNDk2IiB5Mj0iNDcyIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cGF0aCBkPSJNIDQ5Niw0NzIgQSA0LDQgMCwwLDEgNTAwLDQ3NiIgY2xhc3M9Im5vZmlsbCI+PC9wYXRoPgogICAgICAgIDxsaW5lIHgxPSI1MDAiIHkxPSI0NzYiIHgyPSI1MDAiIHkyPSI1MTIiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPC9nPgogICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIyMzIsNDc2IDIzNiw0NjQgMjQwLDQ3NiIgY2xhc3M9ImZpbGxlZCI+PC9wb2x5Z29uPgogICAgICAgIDxsaW5lIHgxPSIyMzYiIHkxPSI0NzYiIHgyPSIyMzYiIHkyPSI1MjgiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPC9nPgogICAgPGc+CiAgICAgICAgPHBhdGggZD0iTSA0NDgsNTIwIEEgNCw0IDAsMCwwIDQ0NCw1MjQiIGNsYXNzPSJub2ZpbGwiPjwvcGF0aD4KICAgICAgICA8bGluZSB4MT0iNDQ0IiB5MT0iNTI0IiB4Mj0iNDQ0IiB5Mj0iNTQ4IiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8bGluZSB4MT0iNDQ4IiB5MT0iNTIwIiB4Mj0iNTUyIiB5Mj0iNTIwIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cGF0aCBkPSJNIDU1Miw1MjAgQSA0LDQgMCwwLDEgNTU2LDUyNCIgY2xhc3M9Im5vZmlsbCI+PC9wYXRoPgogICAgICAgIDxsaW5lIHgxPSI1NTYiIHkxPSI1MjQiIHgyPSI1NTYiIHkyPSI1NDgiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxwYXRoIGQ9Ik0gNDQ0LDU0OCBBIDQsNCAwLDAsMCA0NDgsNTUyIiBjbGFzcz0ibm9maWxsIj48L3BhdGg+CiAgICAgICAgPGxpbmUgeDE9IjQ0OCIgeTE9IjU1MiIgeDI9IjU1MiIgeTI9IjU1MiIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICAgICAgPHBhdGggZD0iTSA1NTYsNTQ4IEEgNCw0IDAsMCwxIDU1Miw1NTIiIGNsYXNzPSJub2ZpbGwiPjwvcGF0aD4KICAgICAgICA8cGF0aCBkPSJNIDQxNiw1MzYgQSA0LDQgMCwwLDAgNDEyLDU0MCIgY2xhc3M9Im5vZmlsbCI+PC9wYXRoPgogICAgICAgIDxsaW5lIHgxPSI0MTIiIHkxPSI1NDAiIHgyPSI0MTIiIHkyPSI1NDgiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxsaW5lIHgxPSI0MTYiIHkxPSI1MzYiIHgyPSI0NDQiIHkyPSI1MzYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iMzg0LDU0OCAzNzYsNTUyIDM4NCw1NTYiIGNsYXNzPSJmaWxsZWQiPjwvcG9seWdvbj4KICAgICAgICA8bGluZSB4MT0iMzg0IiB5MT0iNTUyIiB4Mj0iNDA4IiB5Mj0iNTUyIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgICAgICA8cGF0aCBkPSJNIDQxMiw1NDggQSA0LDQgMCwwLDEgNDA4LDU1MiIgY2xhc3M9Im5vZmlsbCI+PC9wYXRoPgogICAgPC9nPgogICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSI4OCwxMjQgOTIsMTEyIDk2LDEyNCIgY2xhc3M9ImZpbGxlZCI+PC9wb2x5Z29uPgogICAgICAgIDxsaW5lIHgxPSI5MiIgeTE9IjEyNCIgeDI9IjkyIiB5Mj0iMTkyIiBjbGFzcz0ic29saWQiPjwvbGluZT4KICAgIDwvZz4KICAgIDxnPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iODgsMjUyIDkyLDI0MCA5NiwyNTIiIGNsYXNzPSJmaWxsZWQiPjwvcG9seWdvbj4KICAgICAgICA8bGluZSB4MT0iOTIiIHkxPSIyNTIiIHgyPSI5MiIgeTI9IjMwNCIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8L2c+CiAgICA8Zz4KICAgICAgICA8cG9seWdvbiBwb2ludHM9Ijg4LDM2NCA5MiwzNTIgOTYsMzY0IiBjbGFzcz0iZmlsbGVkIj48L3BvbHlnb24+CiAgICAgICAgPGxpbmUgeDE9IjkyIiB5MT0iMzY0IiB4Mj0iOTIiIHkyPSI0MTYiIGNsYXNzPSJzb2xpZCI+PC9saW5lPgogICAgPC9nPgogICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSI5Niw0NzYgMTAwLDQ2NCAxMDQsNDc2IiBjbGFzcz0iZmlsbGVkIj48L3BvbHlnb24+CiAgICAgICAgPGxpbmUgeDE9IjEwMCIgeTE9IjQ3NiIgeDI9IjEwMCIgeTI9IjUyOCIgY2xhc3M9InNvbGlkIj48L2xpbmU+CiAgICA8L2c+Cjwvc3ZnPg==" alt="traits" /></span></p>
+<h4 id="use_port--system-type"><a href="#use_port--system-type"><code>use_port!</code> → System Type</a></h4>
+<p>The composition process revolves around a kernel trait type. The first thing to do is to define one. It could be defined by application code, but instead it’s defined by <code>use_port!</code> purely for convenience. A kernel trait type is named <code>SystemTrait</code> by convention.</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">r3_xxx_port::use_port!</span>(<span class="kw">unsafe</span> <span class="kw">struct</span> <span class="ident">SystemTrait</span>);
+
+<span class="comment">// ----- The above macro invocation expands to: -----</span>
+<span class="kw">struct</span> <span class="ident">SystemTrait</span>;
+<span class="comment">/*  ⋮  */</span></code></pre></div>
+<h4 id="use_port--impl-port"><a href="#use_port--impl-port"><code>use_port!</code> → <code>impl Port</code></a></h4>
+<p>The first important role of <code>use_port!</code> is to implement the trait <a href="trait.Port.html"><code>Port</code></a> on the kernel trait type. <code>Port</code> describes the properties of the target hardware and provides target-dependent low-level functions such as a context switcher. <code>use_port!</code> can define <code>static</code> items to store internal state data (this would be inconvenient and messy without a macro).</p>
+<p><code>Port</code> is actually a group of several supertraits (such as <a href="trait.PortThreading.html"><code>PortThreading</code></a>), each of which can be implemented in a separate location.</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">r3_xxx_port::use_port!</span>(<span class="kw">unsafe</span> <span class="kw">struct</span> <span class="ident">SystemTraits</span>);
+
+<span class="comment">// ----- The above macro invocation also produces: -----</span>
+<span class="comment">/*  ⋮  */</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">r3_kernel::PortThreading</span> <span class="kw">for</span> <span class="ident">SystemTraits</span> { <span class="comment">/* ... */</span> }
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">r3_kernel::PortInterrupts</span> <span class="kw">for</span> <span class="ident">SystemTraits</span> { <span class="comment">/* ... */</span> }
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">r3_kernel::PortTimer</span> <span class="kw">for</span> <span class="ident">SystemTraits</span> { <span class="comment">/* ... */</span> }
+<span class="comment">/*  ⋮  */</span>
+
+<span class="comment">// `Port` gets implemented automatically when</span>
+<span class="comment">// all required supertraits are implemented.</span></code></pre></div>
+<p>The job of <code>use_port!</code> doesn’t end here, but before we move on, we must first explain what <code>build!</code> does.</p>
+<h4 id="build--impl-kernelcfgn"><a href="#build--impl-kernelcfgn"><code>build!</code> → <code>impl KernelCfgN</code></a></h4>
+<p><code>build!</code> assembles a database of statically defined kernel objects using a supplied <a href="../r3_core/index.html#static-configuration">configuration function</a>. Using this database, it does things such as determining the optimal data type to represent all allowed task priority values and defining <code>static</code> items to store kernel-private data structures such as task control blocks. The result is attached to a supplied kernel trait type by implementing <a href="trait.KernelCfg1.html"><code>KernelCfg1</code></a> and <a href="trait.KernelCfg2.html"><code>KernelCfg2</code></a> on it.</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="kw">static</span> <span class="ident">COTTAGE</span>: <span class="ident">Objects</span> <span class="op">=</span>
+    <span class="macro">r3_kernel::build!</span>(<span class="ident">SystemTraits</span>, <span class="ident">configure_app</span> =&gt; <span class="ident">Objects</span>);
+
+<span class="comment">// ----- The above macro invocation produces (simplified for brevity): -----</span>
+<span class="kw">static</span> <span class="ident">COTTAGE</span>: <span class="ident">Objects</span> <span class="op">=</span> {
+    <span class="kw">use</span> <span class="ident">r3_kernel::TaskCb</span>;
+
+    <span class="kw">const</span> <span class="ident">CFG</span>: <span class="comment">/* ... */</span> <span class="op">=</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_cfg</span> <span class="op">=</span> <span class="ident">r3_kernel::cfg::CfgBuilder::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cfg</span> <span class="op">=</span> <span class="ident">r3_core::kernel::cfg::Cfg::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">raw_cfg</span>);
+        <span class="ident">configure_app</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cfg</span>);
+        <span class="ident">raw_cfg</span>
+    };
+
+    <span class="kw">static</span> <span class="ident">TASK_CB_POOL</span>: [<span class="ident">TaskCb</span><span class="op">&lt;</span><span class="ident">SystemTraits</span><span class="op">&gt;</span>; <span class="kw">_</span>] <span class="op">=</span> <span class="comment">/* ... */</span>;
+
+    <span class="comment">// Things needed by both of `Port` and `KernelCfg2` should live in</span>
+    <span class="comment">// `KernelCfg1` because `Port` cannot refer to an associated item defined</span>
+    <span class="comment">// by `KernelCfg2`.</span>
+    <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">r3_kernel::KernelCfg1</span> <span class="kw">for</span> <span class="ident">SystemTraits</span> {
+        <span class="kw">type</span> <span class="ident">TaskPriority</span> <span class="op">=</span> <span class="comment">/* ... */</span>;
+    }
+
+    <span class="comment">// Things dependent on data types defined by `Port` should live in</span>
+    <span class="comment">// `KernelCfg2`.</span>
+    <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">r3_kernel::KernelCfg2</span> <span class="kw">for</span> <span class="ident">SystemTraits</span> {
+        <span class="kw">fn</span> <span class="ident">task_cb_pool</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">TaskCb</span><span class="op">&lt;</span><span class="ident">SystemTraits</span><span class="op">&gt;</span>] {
+            <span class="kw-2">&amp;</span><span class="ident">TASK_CB_POOL</span>
+        }
+        <span class="comment">/* ... */</span>
+    }
+
+    <span class="comment">// Make the generated object IDs available to the application</span>
+    <span class="ident">configure_app</span>(...)
+};</code></pre></div>
+<h4 id="impl-kerneltraits"><a href="#impl-kerneltraits"><code>impl KernelTraits</code></a></h4>
+<p>The traits introduced so far are enough to instantiate the target-independent portion of the RTOS kernel. To reflect this, <a href="trait.KernelTraits.html"><code>KernelTraits</code></a> and <a href="trait.PortToKernel.html"><code>PortToKernel</code></a> are automatically implemented on the kernel trait type by a blanket <code>impl</code>.</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="kw">impl</span><span class="op">&lt;</span><span class="ident">System</span>: <span class="ident">Port</span> <span class="op">+</span> <span class="ident">KernelCfg1</span> <span class="op">+</span> <span class="ident">KernelCfg2</span><span class="op">&gt;</span> <span class="ident">KernelTraits</span> <span class="kw">for</span> <span class="ident">System</span> { <span class="comment">/* ... */</span> }
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">System</span>: <span class="ident">KernelTraits</span><span class="op">&gt;</span> <span class="ident">PortToKernel</span> <span class="kw">for</span> <span class="ident">System</span> { <span class="comment">/* ... */</span> }</code></pre></div>
+<h4 id="use_port--entry-points"><a href="#use_port--entry-points"><code>use_port!</code> → Entry Points</a></h4>
+<p>The remaining task of <code>use_port!</code> is to generate entry points to the kernel. The most important one is for booting the kernel. The other ones are <a href="../r3_core/index.html#interrupt-handling-framework">interrupt handlers</a>.</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">r3_xxx_port::use_port!</span>(<span class="kw">unsafe</span> <span class="kw">struct</span> <span class="ident">SystemTraits</span>);
+
+<span class="comment">// ----- The above macro invocation lastly produces: -----</span>
+<span class="comment">/*  ⋮  */</span>
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="op">&lt;</span><span class="ident">SystemTraits</span> <span class="kw">as</span> <span class="ident">r3_kernel::PortToKernel</span><span class="op">&gt;</span><span class="ident">::boot</span>();
+}</code></pre></div>
+<h2 id="implementation-defined-behaviors"><a href="#implementation-defined-behaviors">Implementation-Defined Behaviors</a></h2>
+<ul>
+<li><strong><a href="../r3_core/kernel/raw/enum.QueueOrder.html"><code>QueueOrder</code></a></strong>: This kernel supports <code>Fifo</code> and <code>TaskPriority</code>. Unsupported values are treated as <code>TaskPriority</code>.</li>
+<li><strong><a href="../r3_core/kernel/raw/enum.MutexProtocol.html"><code>MutexProtocol</code></a></strong>: This kernel supports <code>None</code> and <code>Ceiling(_)</code>. Unsupported values are treated as <code>None</code>.</li>
+<li><strong><a href="../r3_core/kernel/error/enum.ResultCode.html#variant.NoAccess"><code>ResultCode::NoAccess</code></a></strong>: Not supported. This kernel causes an undefined behavior (including a potential panic) when an invalid ID is given.</li>
+</ul>
+<h2 id="cargo-features"><a href="#cargo-features">Cargo Features</a></h2>
+<ul>
+<li><strong><code>inline_syscall</code></strong>: Allows (but does not force) inlining for all application-facing methods. Enabling this feature might lower the latency of system calls but there are the following downsides: (1) The decision of inlining is driven by the compiler’s built-in heuristics, which takes many factors into consideration. Therefore, the performance improvement (or deterioration) varies unpredictably depending on the global structure of your application and the compiler version used, making it harder to design the system to meet real-time requirements. (2) Inlining increases the code working set size and can make the code run even slower. This is especially likely to happen on an execute-in-place (XIP) system with low-speed code memory such as an SPI flash.</li>
+</ul>
+<h3 id="kernel-features"><a href="#kernel-features">Kernel Features</a></h3>
+<p>Enabling the following features might affect the kernel’s runtime performance and memory usage whether or not they are actually in use.</p>
+<ul>
+<li><strong><code>priority_boost</code></strong>: Enables <a href="../r3_core/kernel/global/trait.Kernel.html#tymethod.boost_priority">Priority Boost</a> (<a href="../r3_core/kernel/raw/trait.KernelBoostPriority.html"><code>raw::KernelBoostPriority</code></a>).</li>
+<li><strong><code>system_time</code></strong>: Enables the tracking of a global system time (<a href="../r3_core/kernel/raw/trait.KernelTime.html"><code>raw::KernelTime</code></a>).</li>
+</ul>
+<style type="text/css">
+/* Cover image, something that is definitely relevant to the subject */
+.distractor {
+    margin: 0 auto;
+    max-width: 600px;
+}
+.distractor > a {
+    display: block;
+    background-size: cover;
+    /* background: ...; — specified by inline style */
+    /* padding-bottom: ...; — specified by inline style */
+}
+
+/* #![doc(html_logo_url = ...)] */
+body.theme-dark .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.9);
+}
+body.theme-ayu .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.85);
+}
+
+/* Table of contents */
+.toc-header + ul {
+    background: rgba(128, 128, 128, 0.1);
+    margin: 1em 0; padding: 1em;
+    width: 40%;
+    min-width: 280px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    font-family: 'Fira Sans'; /* The UI/heading font of rustdoc */
+    font-size: 95%;
+}
+.toc-header + ul::before {
+    content: "Contents";
+    font-weight: bold;
+}
+.toc-header + ul ul { margin-bottom: 0; }
+.toc-header + ul li { list-style: none; }
+
+/* Poor man's admonition
+ *
+ * # Usage
+ *
+ * ## Normal
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > **Title:** lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     > lorem ipsum
+ *
+ * ## Collapsible
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > <details>
+ *     > <summary>Title</summary>
+ *     >
+ *     > lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     >
+ *     > </details>
+ */
+.admonition-follows + blockquote {
+    background: rgba(128, 128, 128, 0.1) !important;
+    margin: 1em !important; padding: 1em 1em 0 !important;
+    color: inherit !important; overflow: hidden;
+}
+.admonition-follows + blockquote::after { /* collapsible padding */
+    content: ""; display: block; margin-top: 1em;
+}
+
+.admonition-follows + blockquote summary {
+    cursor: pointer;
+    will-change: opacity;
+    user-select: none;
+    -webkit-user-select: none;
+    font-weight: bold;
+}
+.admonition-follows + blockquote summary:not([open]):not(:hover) {
+    opacity: 0.5;
+}
+.admonition-follows + blockquote summary + * {
+    margin-top: 1em;
+}
+
+/* Display a warning if some Cargo features are disabled. */
+.disabled-feature-warning > p > span:before { content: "Warning:"; font-weight: bold; }
+.disabled-feature-warning > p > span:after { content: " This documentation was built without a "; }
+.disabled-feature-warning > p > code:before { content: "--all-features"; }
+.disabled-feature-warning > p:after { content: " build option. Some items might be missing."; }
+
+/* Center an inline image
+ *
+ * # Usage
+ *
+ *    <span class="center">![kernel-traits]</span>
+ *
+ *    [kernel-traits]: data:image/svg+xml;base64,< super long base64 data >
+ *
+ * The image wouldn't render if `![kernel-traits]` were wrapped with `<center>`
+ * because the Markdown processor doesn't do Markdown processing inside a block
+ * element. On the other hand, it thinks `<span>` is an inline element (by
+ * default), so markups inside `<span>` are processed.
+ *
+ * For diagrams processed by `::svgbobdoc`, just use `<center>`.
+ */
+span.center {
+    display: block;
+    text-align: center;
+}
+
+/* Add margins to SvgBob images */
+span.center img, center img {
+    border: 10px solid white;
+    background: white;
+}
+
+/* Auto-invert SvgBob images in a dark theme */
+body.theme-dark span.center img, body.theme-dark center img {
+    filter: invert(88%);
+}
+
+body.theme-ayu span.center img, body.theme-ayu center img {
+    filter: invert(89%) sepia(90%) hue-rotate(180deg);
+}
+
+/* FIXME: rustdoc's intra-doc processor generates a warning when it encounters a
+   bracketed text with an unknown link target. This misfires for CSS attribute
+   selectors. Make rustdoc happy by defining a fake link target. I'm not sure if
+   it's worth reporting.
+
+[open]: #dummy
+
+*/
+</style>
+<script type="application/javascript">
+<!--
+// Monitors the current rustdoc theme and adds `.theme-NAME` to `<body>`
+function initThemeMonitor() {
+    if (typeof switchTheme !== 'function' ||
+        typeof themeStyle !== 'object' ||
+        typeof document.body.classList === 'undefined')
+    {
+        // Something is wrong, don't do anything
+        return;
+    }
+
+    var currentClassName = null;
+    function onApplyTheme(name) {
+        if (currentClassName != null) {
+            document.body.classList.remove(currentClassName);
+        }
+        currentClassName = "theme-" + name;
+        document.body.classList.add(currentClassName);
+    }
+
+    var match = themeStyle.href.match(/\/([a-z]+)(-[-a-zA-Z0-9.]*)?\.css$/);
+    var currentStyle = (match && match[1]) || "light";
+    onApplyTheme(currentStyle);
+
+    // Intercept calls to `switchTheme`
+    var originalSwitchTheme = switchTheme;
+    switchTheme = function (_0, _1, newTheme) {
+        onApplyTheme(newTheme);
+        originalSwitchTheme.apply(this, arguments);
+    };
+}
+
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initThemeMonitor();
+} else {
+    document.addEventListener('DOMContentLoaded', initThemeMonitor);
+}
+-->
+</script>
+<style type="text/css">.disabled-feature-warning { display: none; }</style></div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="_changelog_/index.html" title="r3_kernel::_changelog_ mod">_changelog_</a></div><div class="item-right docblock-short"><p>Changelog</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="cfg/index.html" title="r3_kernel::cfg mod">cfg</a></div><div class="item-right docblock-short"><p>Static configuration mechanism for the kernel</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="utils/index.html" title="r3_kernel::utils mod">utils</a></div><div class="item-right docblock-short"><p>Utility</p>
+</div></div></div><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.build.html" title="r3_kernel::build macro">build</a></div><div class="item-right docblock-short"><p>Attach <a href="../r3_core/index.html#static-configuration">a configuration function</a> to a <a href="index.html#kernel-trait-type">kernel trait type</a> by
+implementing <a href="trait.KernelCfg2.html"><code>KernelCfg2</code></a>.</p>
+</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.KernelDebugPrinter.html" title="r3_kernel::KernelDebugPrinter struct">KernelDebugPrinter</a></div><div class="item-right docblock-short"><p>The object returned by <code>&lt;</code><a href="struct.System.html" title="System"><code>System</code></a><code>as</code><a href="../r3_core/kernel/raw/trait.KernelBase.html"><code>KernelBase</code></a><code>&gt;::debug</code>.
+Implements <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="fmt::Debug"><code>fmt::Debug</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.StackHunk.html" title="r3_kernel::StackHunk struct">StackHunk</a></div><div class="item-right docblock-short"><p><a href="../r3_core/kernel/hunk/struct.Hunk.html" title="Hunk"><code>Hunk</code></a> for a task stack.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.State.html" title="r3_kernel::State struct">State</a></div><div class="item-right docblock-short"><p>Global kernel state.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.System.html" title="r3_kernel::System struct">System</a></div><div class="item-right docblock-short"><p>Wraps a provided <a href="index.html#kernel-trait-type">trait type</a> <code>Traits</code> to instantiate a kernel. This type
+implements the traits from <a href="../r3_core/kernel/raw/index.html" title="r3_core::kernel::raw"><code>r3_core::kernel::raw</code></a>, making it usable as a
+kernel, if <code>Traits</code> implements some appropriate traits, which consequently
+make it implement <a href="trait.KernelTraits.html" title="KernelTraits"><code>KernelTraits</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.TaskAttr.html" title="r3_kernel::TaskAttr struct">TaskAttr</a></div><div class="item-right docblock-short"><p>The static properties of a task.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.TaskCb.html" title="r3_kernel::TaskCb struct">TaskCb</a></div><div class="item-right docblock-short"><p><em>Task control block</em> - the state data of a task.</p>
+</div></div></div><h2 id="constants" class="small-section-header"><a href="#constants">Constants</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="constant" href="constant.TIME_HARD_HEADROOM.html" title="r3_kernel::TIME_HARD_HEADROOM constant">TIME_HARD_HEADROOM</a></div><div class="item-right docblock-short"><p>The extent of how overdue the firing of <a href="trait.PortToKernel.html#tymethod.timer_tick"><code>timer_tick</code></a> can be without
+breaking the kernel timing algorithm.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="constant" href="constant.TIME_USER_HEADROOM.html" title="r3_kernel::TIME_USER_HEADROOM constant">TIME_USER_HEADROOM</a></div><div class="item-right docblock-short"><p>The extent of how overdue a timed event can be made or how far a timed event
+can be delayed past <code>Duration::MAX</code> by a call to <a href="../r3_core/kernel/raw/trait.KernelAdjustTime.html#tymethod.raw_adjust_time"><code>raw_adjust_time</code></a>.</p>
+</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.KernelCfg1.html" title="r3_kernel::KernelCfg1 trait">KernelCfg1</a></div><div class="item-right docblock-short"><p>Associates a kernel trait type with kernel-private data. Use <a href="macro.build.html" title="build!"><code>build!</code></a> to
+implement.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.KernelCfg2.html" title="r3_kernel::KernelCfg2 trait">KernelCfg2</a></div><div class="item-right docblock-short"><p>Associates “system” types with kernel-private data. Use <a href="macro.build.html" title="build!"><code>build!</code></a> to
+implement.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.KernelTraits.html" title="r3_kernel::KernelTraits trait">KernelTraits</a></div><div class="item-right docblock-short"><p>Represents a complete <a href="index.html#the-kernrel-trait-type">kernel trait type</a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Port.html" title="r3_kernel::Port trait">Port</a></div><div class="item-right docblock-short"><p>Represents a particular group of traits that a port should implement.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.PortInterrupts.html" title="r3_kernel::PortInterrupts trait">PortInterrupts</a></div><div class="item-right docblock-short"><p>Implemented by a port. This trait contains items related to controlling
+interrupt lines.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.PortThreading.html" title="r3_kernel::PortThreading trait">PortThreading</a></div><div class="item-right docblock-short"><p>Implemented by a port. This trait contains items related to low-level
+operations for controlling CPU states and context switching.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.PortTimer.html" title="r3_kernel::PortTimer trait">PortTimer</a></div><div class="item-right docblock-short"><p>Implemented by a port. This trait contains items related to controlling
+a system timer.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.PortToKernel.html" title="r3_kernel::PortToKernel trait">PortToKernel</a></div><div class="item-right docblock-short"><p>Methods intended to be called by a port.</p>
+</div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.Cfg.html" title="r3_kernel::Cfg type">Cfg</a></div><div class="item-right docblock-short"><p>The instantiation of <a href="../r3_core/kernel/cfg/struct.Cfg.html" title="r3_core::kernel::Cfg"><code>r3_core::kernel::Cfg</code></a> used by <a href="macro.build.html" title="build!"><code>build!</code></a> to configure
+a kernel. <code>CfgBuilder&lt;...&gt;</code> in this alias Implements
+<a href="https://github.com/rust-lang/rust/issues/77463"><code>~const</code></a><code> </code><a href="../r3_core/kernel/raw_cfg/trait.CfgBase.html"><code>raw_cfg::CfgBase</code></a><code>&lt;</code><a href="struct.System.html" title="System"><code>System</code></a><code>&lt;Traits&gt;&gt;</code> and many other
+<code>raw_cfg</code> traits.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.Id.html" title="r3_kernel::Id type">Id</a></div><div class="item-right docblock-short"><p>Numeric value used to identify various kinds of kernel objects.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.UTicks.html" title="r3_kernel::UTicks type">UTicks</a></div><div class="item-right docblock-short"><p>Unsigned integer type representing a tick count used by
+<a href="trait.PortTimer.html">a port timer driver</a>. The period of each tick is fixed at one microsecond.</p>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="r3_kernel" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (29e4a9ee0 2022-08-10)" ></div></body></html>

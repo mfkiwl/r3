@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["clear_uie","User Interrupt Enable"],["read","Reads the CSR"],["set_uie","User Interrupt Enable"],["set_upie","User Previous Interrupt Enable"]],"struct":[["Ustatus","ustatus register"]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":[["pp_asm","Preprocessed `asm!`."],["pp_llvm_asm","Preprocessed `llvm_asm!`."],["pp_text_macro","Define a macro that produces a string literal whose contents is revealed or masked based on the current build configuration (`cfg!`)."]]};

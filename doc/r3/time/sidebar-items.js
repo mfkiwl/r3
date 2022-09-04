@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Duration","Represents a signed time span used by the API surface of R3-OS."],["Time","Represents a timestamp used by the API surface of R3-OS."],["TryFromDateTimeError","Error type returned when a checked timestamp type conversion fails."],["TryFromDurationError","Error type returned when a checked duration type conversion fails."]]};

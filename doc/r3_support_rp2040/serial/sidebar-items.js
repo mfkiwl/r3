@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["NbWriter","The adapter for [`UartExt`] that uses [`::nb`] to notify the caller of a blocking situation."]],"trait":[["UartExt","The extension trait for [`rp2040_pac::UART0`][]."]]};

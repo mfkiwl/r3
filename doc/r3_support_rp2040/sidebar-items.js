@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":[["sprint","Macro for printing to the serial standard output"],["sprintln","Macro for printing to the serial standard output, with a newline."]],"mod":[["_changelog_","Changelog"],["clock",""],["serial","Serial driver"],["stdout","Standard output"],["usbstdio","Standard input/output, behaving as a USB serial device"]]};

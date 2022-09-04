@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Hunk","Represents a single hunk in a system."],["HunkDefiner","The definer (static builder) for [`Hunk`]."]]};

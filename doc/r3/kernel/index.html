@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The kernel interface."><meta name="keywords" content="rust, rustlang, rust-lang, kernel"><title>r3::kernel - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">
+/* Cover image, something that is definitely relevant to the subject */
+.distractor {
+    margin: 0 auto;
+    max-width: 600px;
+}
+.distractor > a {
+    display: block;
+    background-size: cover;
+    /* background: ...; — specified by inline style */
+    /* padding-bottom: ...; — specified by inline style */
+}
+
+/* #![doc(html_logo_url = ...)] */
+body.theme-dark .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.9);
+}
+body.theme-ayu .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.85);
+}
+
+/* Table of contents */
+.toc-header + ul {
+    background: rgba(128, 128, 128, 0.1);
+    margin: 1em 0; padding: 1em;
+    width: 40%;
+    min-width: 280px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    font-family: 'Fira Sans'; /* The UI/heading font of rustdoc */
+    font-size: 95%;
+}
+.toc-header + ul::before {
+    content: "Contents";
+    font-weight: bold;
+}
+.toc-header + ul ul { margin-bottom: 0; }
+.toc-header + ul li { list-style: none; }
+
+/* Poor man's admonition
+ *
+ * # Usage
+ *
+ * ## Normal
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > **Title:** lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     > lorem ipsum
+ *
+ * ## Collapsible
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > <details>
+ *     > <summary>Title</summary>
+ *     >
+ *     > lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     >
+ *     > </details>
+ */
+.admonition-follows + blockquote {
+    background: rgba(128, 128, 128, 0.1) !important;
+    margin: 1em !important; padding: 1em 1em 0 !important;
+    color: inherit !important; overflow: hidden;
+}
+.admonition-follows + blockquote::after { /* collapsible padding */
+    content: ""; display: block; margin-top: 1em;
+}
+
+.admonition-follows + blockquote summary {
+    cursor: pointer;
+    will-change: opacity;
+    user-select: none;
+    -webkit-user-select: none;
+    font-weight: bold;
+}
+.admonition-follows + blockquote summary:not([open]):not(:hover) {
+    opacity: 0.5;
+}
+.admonition-follows + blockquote summary + * {
+    margin-top: 1em;
+}
+
+/* Display a warning if some Cargo features are disabled. */
+.disabled-feature-warning > p > span:before { content: "Warning:"; font-weight: bold; }
+.disabled-feature-warning > p > span:after { content: " This documentation was built without a "; }
+.disabled-feature-warning > p > code:before { content: "--all-features"; }
+.disabled-feature-warning > p:after { content: " build option. Some items might be missing."; }
+
+/* Center an inline image
+ *
+ * # Usage
+ *
+ *    <span class="center">![kernel-traits]</span>
+ *
+ *    [kernel-traits]: data:image/svg+xml;base64,< super long base64 data >
+ *
+ * The image wouldn't render if `![kernel-traits]` were wrapped with `<center>`
+ * because the Markdown processor doesn't do Markdown processing inside a block
+ * element. On the other hand, it thinks `<span>` is an inline element (by
+ * default), so markups inside `<span>` are processed.
+ *
+ * For diagrams processed by `::svgbobdoc`, just use `<center>`.
+ */
+span.center {
+    display: block;
+    text-align: center;
+}
+
+/* Add margins to SvgBob images */
+span.center img, center img {
+    border: 10px solid white;
+    background: white;
+}
+
+/* Auto-invert SvgBob images in a dark theme */
+body.theme-dark span.center img, body.theme-dark center img {
+    filter: invert(88%);
+}
+
+body.theme-ayu span.center img, body.theme-ayu center img {
+    filter: invert(89%) sepia(90%) hue-rotate(180deg);
+}
+
+/* FIXME: rustdoc's intra-doc processor generates a warning when it encounters a
+   bracketed text with an unknown link target. This misfires for CSS attribute
+   selectors. Make rustdoc happy by defining a fake link target. I'm not sure if
+   it's worth reporting.
+
+[open]: #dummy
+
+*/
+</style>
+<script type="application/javascript">
+<!--
+// Monitors the current rustdoc theme and adds `.theme-NAME` to `<body>`
+function initThemeMonitor() {
+    if (typeof switchTheme !== 'function' ||
+        typeof themeStyle !== 'object' ||
+        typeof document.body.classList === 'undefined')
+    {
+        // Something is wrong, don't do anything
+        return;
+    }
+
+    var currentClassName = null;
+    function onApplyTheme(name) {
+        if (currentClassName != null) {
+            document.body.classList.remove(currentClassName);
+        }
+        currentClassName = "theme-" + name;
+        document.body.classList.add(currentClassName);
+    }
+
+    var match = themeStyle.href.match(/\/([a-z]+)(-[-a-zA-Z0-9.]*)?\.css$/);
+    var currentStyle = (match && match[1]) || "light";
+    onApplyTheme(currentStyle);
+
+    // Intercept calls to `switchTheme`
+    var originalSwitchTheme = switchTheme;
+    switchTheme = function (_0, _1, newTheme) {
+        onApplyTheme(newTheme);
+        originalSwitchTheme.apply(this, arguments);
+    };
+}
+
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initThemeMonitor();
+} else {
+    document.addEventListener('DOMContentLoaded', initThemeMonitor);
+}
+-->
+</script>
+</head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../r3/index.html"><div class="logo-container"><img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../r3/index.html"><div class="logo-container">
+                    <img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></div></a><h2 class="location"><a href="#">Module kernel</a></h2><div class="sidebar-elems"><section><div class="block"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div></section></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../r3/index.html">
+                        <img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Module <a href="../index.html">r3</a>::<wbr><a class="mod" href="#">kernel</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../src/r3_core/lib.rs.html#86">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The kernel interface.</p>
+<p>Not to be confused with <a href="https://crates.io/crates/r3_kernel"><code>r3_kernel</code></a>, a kernel implementation.</p>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="cfg/index.html" title="r3::kernel::cfg mod">cfg</a></div><div class="item-right docblock-short"><p>Kernel configuration</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="event_group/index.html" title="r3::kernel::event_group mod">event_group</a></div><div class="item-right docblock-short"><p>Event groups</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="hook/index.html" title="r3::kernel::hook mod">hook</a></div><div class="item-right docblock-short"><p>Hooks</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="hunk/index.html" title="r3::kernel::hunk mod">hunk</a></div><div class="item-right docblock-short"><p>Hunks</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="interrupt/index.html" title="r3::kernel::interrupt mod">interrupt</a></div><div class="item-right docblock-short"><p>Interrupt lines and handlers</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="mutex/index.html" title="r3::kernel::mutex mod">mutex</a></div><div class="item-right docblock-short"><p>Mutexes</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="r3::kernel::prelude mod">prelude</a></div><div class="item-right docblock-short"><p>The prelude module. This module re-exports <a href="trait.Kernel.html"><code>Kernel</code></a> and other extension
+traits with impl-only-use (<code>use ... as _</code>, <a href="https://rust-lang.github.io/rfcs/2166-impl-only-use.html">RFC2166</a>).</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="raw/index.html" title="r3::kernel::raw mod">raw</a></div><div class="item-right docblock-short"><p>The low-level kernel interface to be implemented by a kernel implementor.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="raw_cfg/index.html" title="r3::kernel::raw_cfg mod">raw_cfg</a></div><div class="item-right docblock-short"><p>The low-level kernel static configuration interface to be implemented by a
+kernel implementor.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="semaphore/index.html" title="r3::kernel::semaphore mod">semaphore</a></div><div class="item-right docblock-short"><p>Semaphores</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="task/index.html" title="r3::kernel::task mod">task</a></div><div class="item-right docblock-short"><p>Tasks</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="timer/index.html" title="r3::kernel::timer mod">timer</a></div><div class="item-right docblock-short"><p>Timers</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="traits/index.html" title="r3::kernel::traits mod">traits</a></div><div class="item-right docblock-short"><p>Re-exports all traits defined under this module for convenience.</p>
+</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Cfg.html" title="r3::kernel::Cfg struct">Cfg</a></div><div class="item-right docblock-short"><p>Wraps a <a href="traits/trait.CfgBase.html" title="raw_cfg::CfgBase"><code>raw_cfg::CfgBase</code></a> to provide higher-level services.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.EventGroup.html" title="r3::kernel::EventGroup struct">EventGroup</a></div><div class="item-right docblock-short"><p>Represents a single owned event group in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.EventGroupRef.html" title="r3::kernel::EventGroupRef struct">EventGroupRef</a></div><div class="item-right docblock-short"><p>Represents a single borrowed event group in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.EventGroupWaitFlags.html" title="r3::kernel::EventGroupWaitFlags struct">EventGroupWaitFlags</a></div><div class="item-right docblock-short"><p>Options for <a href="traits/trait.EventGroupMethods.html#method.wait"><code>EventGroup::wait</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Hunk.html" title="r3::kernel::Hunk struct">Hunk</a></div><div class="item-right docblock-short"><p>Represents a single hunk in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.InterruptLine.html" title="r3::kernel::InterruptLine struct">InterruptLine</a></div><div class="item-right docblock-short"><p>Refers to an interrupt line in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LocalTask.html" title="r3::kernel::LocalTask struct">LocalTask</a></div><div class="item-right docblock-short"><p>A non-<code>Send</code>, <code>'static</code> <a href="struct.Task.html">task</a> reference. The lack of <code>Send</code>-ness constrains
+its lifetime to the owning task and thus allows it to represent a <a href="struct.LocalTask.html#method.current">current
+task</a> <a href="../../r3_core/index.html#object-safety">safely</a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Mutex.html" title="r3::kernel::Mutex struct">Mutex</a></div><div class="item-right docblock-short"><p>Represents a single mutex in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.MutexRef.html" title="r3::kernel::MutexRef struct">MutexRef</a></div><div class="item-right docblock-short"><p>Represents a single borrowed mutex in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Semaphore.html" title="r3::kernel::Semaphore struct">Semaphore</a></div><div class="item-right docblock-short"><p>Represents a single semaphore in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SemaphoreRef.html" title="r3::kernel::SemaphoreRef struct">SemaphoreRef</a></div><div class="item-right docblock-short"><p>Represents a single borrowed semaphore in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.StartupHook.html" title="r3::kernel::StartupHook struct">StartupHook</a></div><div class="item-right docblock-short"><p>Represents a registered startup hook in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.StaticInterruptHandler.html" title="r3::kernel::StaticInterruptHandler struct">StaticInterruptHandler</a></div><div class="item-right docblock-short"><p>Represents a registered (second-level) interrupt handler in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Task.html" title="r3::kernel::Task struct">Task</a></div><div class="item-right docblock-short"><p>Represents a single task in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.TaskRef.html" title="r3::kernel::TaskRef struct">TaskRef</a></div><div class="item-right docblock-short"><p>Represents a single borrowed task in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Timer.html" title="r3::kernel::Timer struct">Timer</a></div><div class="item-right docblock-short"><p>Represents a single timer in a system.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.TimerRef.html" title="r3::kernel::TimerRef struct">TimerRef</a></div><div class="item-right docblock-short"><p>Represents a single borrowed timer in a system.</p>
+</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ActivateTaskError.html" title="r3::kernel::ActivateTaskError enum">ActivateTaskError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TaskMethods.html#method.activate"><code>Task::activate</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.AdjustTimeError.html" title="r3::kernel::AdjustTimeError enum">AdjustTimeError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.adjust_time"><code>Kernel::adjust_time</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.BoostPriorityError.html" title="r3::kernel::BoostPriorityError enum">BoostPriorityError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.boost_priority"><code>Kernel::boost_priority</code></a> and
+<a href="trait.Kernel.html#tymethod.unboost_priority"><code>Kernel::unboost_priority</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ClearInterruptLineError.html" title="r3::kernel::ClearInterruptLineError enum">ClearInterruptLineError</a></div><div class="item-right docblock-short"><p>Error type for <a href="struct.InterruptLine.html#method.clear"><code>InterruptLine::clear</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.CpuLockError.html" title="r3::kernel::CpuLockError enum">CpuLockError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.acquire_cpu_lock"><code>Kernel::acquire_cpu_lock</code></a> and
+<a href="trait.Kernel.html#tymethod.release_cpu_lock"><code>Kernel::release_cpu_lock</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.DrainSemaphoreError.html" title="r3::kernel::DrainSemaphoreError enum">DrainSemaphoreError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.SemaphoreMethods.html#method.drain"><code>Semaphore::drain</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.EnableInterruptLineError.html" title="r3::kernel::EnableInterruptLineError enum">EnableInterruptLineError</a></div><div class="item-right docblock-short"><p>Error type for <a href="struct.InterruptLine.html#method.enable"><code>InterruptLine::enable</code></a> and <a href="struct.InterruptLine.html#method.disable"><code>InterruptLine::disable</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ExitTaskError.html" title="r3::kernel::ExitTaskError enum">ExitTaskError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.exit_task"><code>Kernel::exit_task</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.GetCurrentTaskError.html" title="r3::kernel::GetCurrentTaskError enum">GetCurrentTaskError</a></div><div class="item-right docblock-short"><p>Error type for <a href="struct.LocalTask.html#method.current"><code>LocalTask::current</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.GetEventGroupError.html" title="r3::kernel::GetEventGroupError enum">GetEventGroupError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.EventGroupMethods.html#method.get"><code>EventGroup::get</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.GetSemaphoreError.html" title="r3::kernel::GetSemaphoreError enum">GetSemaphoreError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.SemaphoreMethods.html#method.get"><code>Semaphore::get</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.GetTaskPriorityError.html" title="r3::kernel::GetTaskPriorityError enum">GetTaskPriorityError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TaskMethods.html#method.priority"><code>Task::priority</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.InterruptTaskError.html" title="r3::kernel::InterruptTaskError enum">InterruptTaskError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TaskMethods.html#method.interrupt"><code>Task::interrupt</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.LockMutexError.html" title="r3::kernel::LockMutexError enum">LockMutexError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.MutexMethods.html#method.lock"><code>Mutex::lock</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.LockMutexTimeoutError.html" title="r3::kernel::LockMutexTimeoutError enum">LockMutexTimeoutError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.MutexMethods.html#method.lock_timeout"><code>Mutex::lock_timeout</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.MarkConsistentMutexError.html" title="r3::kernel::MarkConsistentMutexError enum">MarkConsistentMutexError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.MutexMethods.html#method.mark_consistent"><code>Mutex::mark_consistent</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.MutexProtocol.html" title="r3::kernel::MutexProtocol enum">MutexProtocol</a></div><div class="item-right docblock-short"><p>Specifies the locking protocol to be followed by a <a href="struct.Mutex.html">mutex</a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ParkError.html" title="r3::kernel::ParkError enum">ParkError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.park"><code>Kernel::park</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ParkTimeoutError.html" title="r3::kernel::ParkTimeoutError enum">ParkTimeoutError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.park_timeout"><code>Kernel::park_timeout</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.PendInterruptLineError.html" title="r3::kernel::PendInterruptLineError enum">PendInterruptLineError</a></div><div class="item-right docblock-short"><p>Error type for <a href="struct.InterruptLine.html#method.pend"><code>InterruptLine::pend</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.PollEventGroupError.html" title="r3::kernel::PollEventGroupError enum">PollEventGroupError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.EventGroupMethods.html#method.poll"><code>EventGroup::poll</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.PollSemaphoreError.html" title="r3::kernel::PollSemaphoreError enum">PollSemaphoreError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.SemaphoreMethods.html#method.poll_one"><code>Semaphore::poll_one</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.QueryInterruptLineError.html" title="r3::kernel::QueryInterruptLineError enum">QueryInterruptLineError</a></div><div class="item-right docblock-short"><p>Error type for <a href="struct.InterruptLine.html#method.is_pending"><code>InterruptLine::is_pending</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.QueryMutexError.html" title="r3::kernel::QueryMutexError enum">QueryMutexError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.MutexMethods.html#method.is_locked"><code>Mutex::is_locked</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.QueueOrder.html" title="r3::kernel::QueueOrder enum">QueueOrder</a></div><div class="item-right docblock-short"><p>Specifies the sorting order of a wait queue.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ResultCode.html" title="r3::kernel::ResultCode enum">ResultCode</a></div><div class="item-right docblock-short"><p>All result codes (including the one indicating success) that a kernel
+function can return.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SetInterruptLinePriorityError.html" title="r3::kernel::SetInterruptLinePriorityError enum">SetInterruptLinePriorityError</a></div><div class="item-right docblock-short"><p>Error type for <a href="struct.InterruptLine.html#method.set_priority"><code>InterruptLine::set_priority</code></a> and
+<a href="struct.InterruptLine.html#method.set_priority_unchecked"><code>InterruptLine::set_priority_unchecked</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SetTaskPriorityError.html" title="r3::kernel::SetTaskPriorityError enum">SetTaskPriorityError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TaskMethods.html#method.set_priority"><code>Task::set_priority</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SetTimerDelayError.html" title="r3::kernel::SetTimerDelayError enum">SetTimerDelayError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TimerMethods.html#method.set_delay"><code>Timer::set_delay</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SetTimerPeriodError.html" title="r3::kernel::SetTimerPeriodError enum">SetTimerPeriodError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TimerMethods.html#method.set_period"><code>Timer::set_period</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SignalSemaphoreError.html" title="r3::kernel::SignalSemaphoreError enum">SignalSemaphoreError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.SemaphoreMethods.html#method.signal"><code>Semaphore::signal</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SleepError.html" title="r3::kernel::SleepError enum">SleepError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.sleep"><code>Kernel::sleep</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.StartTimerError.html" title="r3::kernel::StartTimerError enum">StartTimerError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TimerMethods.html#method.start"><code>Timer::start</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.StopTimerError.html" title="r3::kernel::StopTimerError enum">StopTimerError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TimerMethods.html#method.stop"><code>Timer::stop</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.TimeError.html" title="r3::kernel::TimeError enum">TimeError</a></div><div class="item-right docblock-short"><p>Error type for <a href="trait.Kernel.html#tymethod.time"><code>Kernel::time</code></a> and
+<a href="trait.Kernel.html#tymethod.set_time"><code>Kernel::set_time</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.TryLockMutexError.html" title="r3::kernel::TryLockMutexError enum">TryLockMutexError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.MutexMethods.html#method.try_lock"><code>Mutex::try_lock</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.UnlockMutexError.html" title="r3::kernel::UnlockMutexError enum">UnlockMutexError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.MutexMethods.html#method.unlock"><code>Mutex::unlock</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.UnparkError.html" title="r3::kernel::UnparkError enum">UnparkError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TaskMethods.html#method.unpark"><code>Task::unpark</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.UnparkExactError.html" title="r3::kernel::UnparkExactError enum">UnparkExactError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.TaskMethods.html#method.unpark_exact"><code>Task::unpark_exact</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.UpdateEventGroupError.html" title="r3::kernel::UpdateEventGroupError enum">UpdateEventGroupError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.EventGroupMethods.html#method.set"><code>EventGroup::set</code></a> and <a href="traits/trait.EventGroupMethods.html#method.clear"><code>EventGroup::clear</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.WaitError.html" title="r3::kernel::WaitError enum">WaitError</a></div><div class="item-right docblock-short"><p>Error type for wait operations such as <a href="traits/trait.EventGroupMethods.html#method.wait"><code>EventGroup::wait</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.WaitEventGroupError.html" title="r3::kernel::WaitEventGroupError enum">WaitEventGroupError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.EventGroupMethods.html#method.wait"><code>EventGroup::wait</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.WaitEventGroupTimeoutError.html" title="r3::kernel::WaitEventGroupTimeoutError enum">WaitEventGroupTimeoutError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.EventGroupMethods.html#method.wait_timeout"><code>EventGroup::wait_timeout</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.WaitSemaphoreError.html" title="r3::kernel::WaitSemaphoreError enum">WaitSemaphoreError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.SemaphoreMethods.html#method.wait_one"><code>Semaphore::wait_one</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.WaitSemaphoreTimeoutError.html" title="r3::kernel::WaitSemaphoreTimeoutError enum">WaitSemaphoreTimeoutError</a></div><div class="item-right docblock-short"><p>Error type for <a href="traits/trait.SemaphoreMethods.html#method.wait_one_timeout"><code>Semaphore::wait_one_timeout</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.WaitTimeoutError.html" title="r3::kernel::WaitTimeoutError enum">WaitTimeoutError</a></div><div class="item-right docblock-short"><p>Error type for wait operations with timeout such as
+<a href="traits/trait.EventGroupMethods.html#method.wait_timeout"><code>EventGroup::wait_timeout</code></a>.</p>
+</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Id.html" title="r3::kernel::Id trait">Id</a></div><div class="item-right docblock-short"><p>A group of traits that must be implemented by kernel object ID types,
+including <a href="traits/trait.KernelBase.html#associatedtype.RawTaskId" title="KernelBase::RawTaskId"><code>KernelBase::RawTaskId</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Kernel.html" title="r3::kernel::Kernel trait">Kernel</a></div><div class="item-right docblock-short"><p>Provides access to the global functionalities of a kernel.</p>
+</div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.EventGroupBits.html" title="r3::kernel::EventGroupBits type">EventGroupBits</a></div><div class="item-right docblock-short"><p>Unsigned integer type backing event groups.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.InterruptNum.html" title="r3::kernel::InterruptNum type">InterruptNum</a></div><div class="item-right docblock-short"><p>Numeric value used to identify interrupt lines.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.InterruptPriority.html" title="r3::kernel::InterruptPriority type">InterruptPriority</a></div><div class="item-right docblock-short"><p>Priority value for an interrupt line.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.SemaphoreValue.html" title="r3::kernel::SemaphoreValue type">SemaphoreValue</a></div><div class="item-right docblock-short"><p>Unsigned integer type representing the number of permits held by a
+<a href="struct.Semaphore.html">semaphore</a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.StaticEventGroup.html" title="r3::kernel::StaticEventGroup type">StaticEventGroup</a></div><div class="item-right docblock-short"><p>A <a href="../../r3_core/index.html#object-handles">static handle</a> type: <a href="struct.EventGroupRef.html" title="EventGroupRef"><code>EventGroupRef</code></a><code>&lt;'static, System&gt;</code></p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.StaticMutex.html" title="r3::kernel::StaticMutex type">StaticMutex</a></div><div class="item-right docblock-short"><p>A <a href="../../r3_core/index.html#object-handles">static handle</a> type: <a href="struct.MutexRef.html" title="MutexRef"><code>MutexRef</code></a><code>&lt;'static, System&gt;</code></p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.StaticSemaphore.html" title="r3::kernel::StaticSemaphore type">StaticSemaphore</a></div><div class="item-right docblock-short"><p>A <a href="../../r3_core/index.html#object-handles">static handle</a> type: <a href="struct.SemaphoreRef.html" title="SemaphoreRef"><code>SemaphoreRef</code></a><code>&lt;'static, System&gt;</code></p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.StaticTask.html" title="r3::kernel::StaticTask type">StaticTask</a></div><div class="item-right docblock-short"><p>A <a href="../../r3_core/index.html#object-handles">static handle</a> type: <a href="struct.TaskRef.html" title="TaskRef"><code>TaskRef</code></a><code>&lt;'static, System&gt;</code></p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.StaticTimer.html" title="r3::kernel::StaticTimer type">StaticTimer</a></div><div class="item-right docblock-short"><p>A <a href="../../r3_core/index.html#object-handles">static handle</a> type: <a href="struct.TimerRef.html" title="TimerRef"><code>TimerRef</code></a><code>&lt;'static, System&gt;</code></p>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="r3" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (29e4a9ee0 2022-08-10)" ></div></body></html>

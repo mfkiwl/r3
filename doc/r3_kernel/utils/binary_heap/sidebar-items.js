@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["BinaryHeap","Min-heap."],["BinaryHeapCtx","Context type for [`BinaryHeap`]’s operations."],["VecLike",""]]};

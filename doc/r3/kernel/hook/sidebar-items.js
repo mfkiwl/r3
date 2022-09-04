@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["StartupHook","Represents a registered startup hook in a system."],["StartupHookDefiner","The definer (static builder) for [`StartupHook`]."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["configure","Add a USB serial device to the system and register it as the destination of the standard output ([`crate::stdout`])."],["poll",""]],"trait":[["Options","The options for the USB serial device configured by [`configure`]."]]};

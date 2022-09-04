@@ -1,0 +1,415 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/r3_port_arm/src/gic/gic_regs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gic_regs.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">
+/* Cover image, something that is definitely relevant to the subject */
+.distractor {
+    margin: 0 auto;
+    max-width: 600px;
+}
+.distractor > a {
+    display: block;
+    background-size: cover;
+    /* background: ...; — specified by inline style */
+    /* padding-bottom: ...; — specified by inline style */
+}
+
+/* #![doc(html_logo_url = ...)] */
+body.theme-dark .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.9);
+}
+body.theme-ayu .logo-container > img[src$="logo-small.svg"] {
+    filter: brightness(0) invert(1) brightness(0.85);
+}
+
+/* Table of contents */
+.toc-header + ul {
+    background: rgba(128, 128, 128, 0.1);
+    margin: 1em 0; padding: 1em;
+    width: 40%;
+    min-width: 280px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    font-family: 'Fira Sans'; /* The UI/heading font of rustdoc */
+    font-size: 95%;
+}
+.toc-header + ul::before {
+    content: "Contents";
+    font-weight: bold;
+}
+.toc-header + ul ul { margin-bottom: 0; }
+.toc-header + ul li { list-style: none; }
+
+/* Poor man's admonition
+ *
+ * # Usage
+ *
+ * ## Normal
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > **Title:** lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     > lorem ipsum
+ *
+ * ## Collapsible
+ *
+ *     <div class="admonition-follows"></div>
+ *
+ *     > <details>
+ *     > <summary>Title</summary>
+ *     >
+ *     > lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
+ *     >
+ *     > </details>
+ */
+.admonition-follows + blockquote {
+    background: rgba(128, 128, 128, 0.1) !important;
+    margin: 1em !important; padding: 1em 1em 0 !important;
+    color: inherit !important; overflow: hidden;
+}
+.admonition-follows + blockquote::after { /* collapsible padding */
+    content: ""; display: block; margin-top: 1em;
+}
+
+.admonition-follows + blockquote summary {
+    cursor: pointer;
+    will-change: opacity;
+    user-select: none;
+    -webkit-user-select: none;
+    font-weight: bold;
+}
+.admonition-follows + blockquote summary:not([open]):not(:hover) {
+    opacity: 0.5;
+}
+.admonition-follows + blockquote summary + * {
+    margin-top: 1em;
+}
+
+/* Display a warning if some Cargo features are disabled. */
+.disabled-feature-warning > p > span:before { content: "Warning:"; font-weight: bold; }
+.disabled-feature-warning > p > span:after { content: " This documentation was built without a "; }
+.disabled-feature-warning > p > code:before { content: "--all-features"; }
+.disabled-feature-warning > p:after { content: " build option. Some items might be missing."; }
+
+/* Center an inline image
+ *
+ * # Usage
+ *
+ *    <span class="center">![kernel-traits]</span>
+ *
+ *    [kernel-traits]: data:image/svg+xml;base64,< super long base64 data >
+ *
+ * The image wouldn't render if `![kernel-traits]` were wrapped with `<center>`
+ * because the Markdown processor doesn't do Markdown processing inside a block
+ * element. On the other hand, it thinks `<span>` is an inline element (by
+ * default), so markups inside `<span>` are processed.
+ *
+ * For diagrams processed by `::svgbobdoc`, just use `<center>`.
+ */
+span.center {
+    display: block;
+    text-align: center;
+}
+
+/* Add margins to SvgBob images */
+span.center img, center img {
+    border: 10px solid white;
+    background: white;
+}
+
+/* Auto-invert SvgBob images in a dark theme */
+body.theme-dark span.center img, body.theme-dark center img {
+    filter: invert(88%);
+}
+
+body.theme-ayu span.center img, body.theme-ayu center img {
+    filter: invert(89%) sepia(90%) hue-rotate(180deg);
+}
+
+/* FIXME: rustdoc's intra-doc processor generates a warning when it encounters a
+   bracketed text with an unknown link target. This misfires for CSS attribute
+   selectors. Make rustdoc happy by defining a fake link target. I'm not sure if
+   it's worth reporting.
+
+[open]: #dummy
+
+*/
+</style>
+<script type="application/javascript">
+<!--
+// Monitors the current rustdoc theme and adds `.theme-NAME` to `<body>`
+function initThemeMonitor() {
+    if (typeof switchTheme !== 'function' ||
+        typeof themeStyle !== 'object' ||
+        typeof document.body.classList === 'undefined')
+    {
+        // Something is wrong, don't do anything
+        return;
+    }
+
+    var currentClassName = null;
+    function onApplyTheme(name) {
+        if (currentClassName != null) {
+            document.body.classList.remove(currentClassName);
+        }
+        currentClassName = "theme-" + name;
+        document.body.classList.add(currentClassName);
+    }
+
+    var match = themeStyle.href.match(/\/([a-z]+)(-[-a-zA-Z0-9.]*)?\.css$/);
+    var currentStyle = (match && match[1]) || "light";
+    onApplyTheme(currentStyle);
+
+    // Intercept calls to `switchTheme`
+    var originalSwitchTheme = switchTheme;
+    switchTheme = function (_0, _1, newTheme) {
+        onApplyTheme(newTheme);
+        originalSwitchTheme.apply(this, arguments);
+    };
+}
+
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initThemeMonitor();
+} else {
+    document.addEventListener('DOMContentLoaded', initThemeMonitor);
+}
+-->
+</script>
+</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../r3_port_arm/index.html"><div class="logo-container"><img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../r3_port_arm/index.html"><div class="logo-container">
+                    <img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../r3_port_arm/index.html">
+                        <img src="https://r3-os.github.io/r3/logo-small.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_snake_case</span>)]</span>
+<span class="kw">use</span> <span class="ident">tock_registers::registers</span>::{<span class="ident">ReadOnly</span>, <span class="ident">ReadWrite</span>};
+
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GicDistributor</span> {
+    <span class="doccomment">/// Distributor Control Register</span>
+    <span class="kw">pub</span> <span class="ident">CTLR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">GICD_CTLR::Register</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Interrupt Controller Type Register</span>
+    <span class="kw">pub</span> <span class="ident">TYPER</span>: <span class="ident">ReadOnly</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">GICD_TYPER::Register</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Distributor Implementer Identification Register</span>
+    <span class="kw">pub</span> <span class="ident">IIDR</span>: <span class="ident">ReadOnly</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="ident">_reserved1</span>: [<span class="ident">u32</span>; <span class="number">5</span>],
+    <span class="ident">_implementation_defined1</span>: [<span class="ident">u32</span>; <span class="number">8</span>],
+    <span class="ident">_reserved2</span>: [<span class="ident">u32</span>; <span class="number">16</span>],
+    <span class="doccomment">/// Interrupt Group Registers</span>
+    <span class="kw">pub</span> <span class="ident">IGROUPR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="ident">_reserved3</span>: [<span class="ident">u32</span>; <span class="number">31</span>],
+    <span class="doccomment">/// Interrupt Set-Enable Registers</span>
+    <span class="kw">pub</span> <span class="ident">ISENABLE</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">32</span>],
+    <span class="doccomment">/// Interrupt Clear-Enable Registers</span>
+    <span class="kw">pub</span> <span class="ident">ICENABLE</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">32</span>],
+    <span class="doccomment">/// Interrupt Set-Pending Registers</span>
+    <span class="kw">pub</span> <span class="ident">ISPEND</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">32</span>],
+    <span class="doccomment">/// Interrupt Clear-Pending Registers</span>
+    <span class="kw">pub</span> <span class="ident">ICPEND</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">32</span>],
+    <span class="doccomment">/// Interrupt Set-Active Registers</span>
+    <span class="kw">pub</span> <span class="ident">ISACTIVE</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">32</span>],
+    <span class="doccomment">/// Interrupt Clear-Active Registers</span>
+    <span class="kw">pub</span> <span class="ident">ICACTIVE</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">32</span>],
+    <span class="doccomment">/// Interrupt Priority Registers</span>
+    <span class="kw">pub</span> <span class="ident">IPRIORITY</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>; <span class="number">1024</span>],
+    <span class="doccomment">/// Interrupt Processor Targets Registers</span>
+    <span class="kw">pub</span> <span class="ident">ITARGETS</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">255</span>],
+    <span class="ident">_reserved5</span>: <span class="ident">u32</span>,
+    <span class="doccomment">/// Interrupt Configuration Registers</span>
+    <span class="kw">pub</span> <span class="ident">ICFGR</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">64</span>],
+    <span class="ident">_implementation_defined2</span>: [<span class="ident">u32</span>; <span class="number">64</span>],
+    <span class="doccomment">/// Non-secure Access Control Registers, optional</span>
+    <span class="kw">pub</span> <span class="ident">NSACR</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>; <span class="number">64</span>],
+    <span class="doccomment">/// Software Generated Interrupt Register</span>
+    <span class="kw">pub</span> <span class="ident">SGIR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="ident">_reserved6</span>: [<span class="ident">u32</span>; <span class="number">3</span>],
+    <span class="doccomment">/// SGI Clear-Pending Registers</span>
+    <span class="kw">pub</span> <span class="ident">CPENDSGIR</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>; <span class="number">16</span>],
+    <span class="doccomment">/// SGI Set-Pending Registers</span>
+    <span class="kw">pub</span> <span class="ident">SPENDSGIR</span>: [<span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>; <span class="number">16</span>],
+    <span class="ident">_reserved7</span>: [<span class="ident">u32</span>; <span class="number">40</span>],
+    <span class="ident">_implementation_defined3</span>: [<span class="ident">u32</span>; <span class="number">12</span>],
+}
+
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GicCpuInterface</span> {
+    <span class="doccomment">/// CPU Interface Control Register</span>
+    <span class="kw">pub</span> <span class="ident">CTLR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">GICC_CTLR::Register</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Interrupt Priority Mask Register</span>
+    <span class="kw">pub</span> <span class="ident">PMR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Binary Point Register</span>
+    <span class="kw">pub</span> <span class="ident">BPR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Interrupt Acknowledge Register</span>
+    <span class="kw">pub</span> <span class="ident">IAR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// End of Interrupt Register</span>
+    <span class="kw">pub</span> <span class="ident">EOIR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Running Priority Register</span>
+    <span class="kw">pub</span> <span class="ident">RPR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Highest Priority Pending Interrupt Register</span>
+    <span class="kw">pub</span> <span class="ident">HPPIR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Aliased Binary Point Register</span>
+    <span class="kw">pub</span> <span class="ident">ABPR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Aliased Interrupt Acknowledge Register</span>
+    <span class="kw">pub</span> <span class="ident">AIAR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Aliased End of Interrupt Register</span>
+    <span class="kw">pub</span> <span class="ident">AEOIR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Aliased Highest Priority Pending Interrupt Register</span>
+    <span class="kw">pub</span> <span class="ident">AHPPIR</span>: <span class="ident">ReadWrite</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+}
+
+<span class="macro">tock_registers::register_bitfields!</span> {<span class="ident">u32</span>,
+    <span class="kw">pub</span> <span class="ident">GICC_CTLR</span> [
+        <span class="doccomment">/// Enable for the signaling of Group 1 interrupts by the CPU interface</span>
+        <span class="doccomment">/// to the connected processor.</span>
+        <span class="ident">Enable</span> <span class="ident">OFFSET</span>(<span class="number">0</span>) <span class="ident">NUMBITS</span>(<span class="number">1</span>) [
+            <span class="ident">Disable</span> <span class="op">=</span> <span class="number">0</span>,
+            <span class="ident">Enable</span> <span class="op">=</span> <span class="number">1</span>
+        ]
+    ]
+}
+
+<span class="macro">tock_registers::register_bitfields!</span> {<span class="ident">u32</span>,
+    <span class="kw">pub</span> <span class="ident">GICD_CTLR</span> [
+        <span class="doccomment">/// Global enable for forwarding pending interrupts from the Distributor</span>
+        <span class="doccomment">/// to the CPU interfaces</span>
+        <span class="ident">Enable</span> <span class="ident">OFFSET</span>(<span class="number">0</span>) <span class="ident">NUMBITS</span>(<span class="number">1</span>) [
+            <span class="ident">Disable</span> <span class="op">=</span> <span class="number">0</span>,
+            <span class="ident">Enable</span> <span class="op">=</span> <span class="number">1</span>
+        ]
+    ]
+}
+
+<span class="macro">tock_registers::register_bitfields!</span> {<span class="ident">u32</span>,
+    <span class="kw">pub</span> <span class="ident">GICD_TYPER</span> [
+        <span class="doccomment">/// Indicates whether the GIC implements the Security Extensions.</span>
+        <span class="ident">SecurityExtn</span> <span class="ident">OFFSET</span>(<span class="number">10</span>) <span class="ident">NUMBITS</span>(<span class="number">1</span>) [
+            <span class="ident">Unimplemented</span> <span class="op">=</span> <span class="number">0</span>,
+            <span class="ident">Implemented</span> <span class="op">=</span> <span class="number">1</span>
+        ],
+
+        <span class="doccomment">/// Indicates the number of implemented CPU interfaces. The number of</span>
+        <span class="doccomment">/// implemented CPU interfaces is one more than the value of this field,</span>
+        <span class="doccomment">/// for example if this field is 0b011, there are four CPU interfaces.</span>
+        <span class="doccomment">/// If the GIC implements the Virtualization Extensions, this is also</span>
+        <span class="doccomment">/// the number of virtual CPU interfaces.</span>
+        <span class="ident">CPUNumber</span> <span class="ident">OFFSET</span>(<span class="number">5</span>) <span class="ident">NUMBITS</span>(<span class="number">3</span>) [],
+
+        <span class="doccomment">/// Indicates the maximum number of interrupts that the GIC supports.</span>
+        <span class="doccomment">/// If ITLinesNumber=N, the maximum number of interrupts is 32(N+1). The</span>
+        <span class="doccomment">/// interrupt ID range is from 0 to (number of IDs – 1).</span>
+        <span class="ident">ITLinesNumber</span> <span class="ident">OFFSET</span>(<span class="number">0</span>) <span class="ident">NUMBITS</span>(<span class="number">5</span>) []
+    ]
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="r3_port_arm" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (29e4a9ee0 2022-08-10)" ></div></body></html>

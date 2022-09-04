@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["Init","Trait for types having a constant default value. This is essentially a constant version of `Default`."],["ZeroInit","Trait for zero-initializable types."]]};

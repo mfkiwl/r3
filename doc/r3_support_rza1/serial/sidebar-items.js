@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["NbWriter","The adapter for [`ScifExt`] that uses [`::nb`] to notify the caller of a blocking situation."]],"trait":[["ScifExt","The extension trait for `rza1::SCIFx` (e.g., [`rza1::SCIF0`])."]]};
